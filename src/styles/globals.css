@@ -1,0 +1,331 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-padding-top: 6rem;
+    background: #FFFFFF;
+  }
+  /* Lenis drives scrolling; native smooth would fight it. Disabled when reduced-motion. */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  body {
+    @apply bg-surface font-body text-ink-soft antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display text-ink;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  ::selection {
+    background: rgba(45, 91, 255, 0.16);
+    color: #111111;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-surface;
+  }
+
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #FFFFFF; }
+  ::-webkit-scrollbar-thumb { background: #D3D7DD; border-radius: 999px; border: 2px solid #FFFFFF; }
+  ::-webkit-scrollbar-thumb:hover { background: #2D5BFF; }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-container px-5 sm:px-6 lg:px-8;
+  }
+
+  /* ---------- Editorial labels ---------- */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-label text-brand-deep;
+  }
+  .index-eyebrow {
+    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-label text-ink-light;
+  }
+  .index-eyebrow .num {
+    @apply font-semibold text-brand-deep;
+  }
+  .index-num {
+    @apply font-display font-bold text-brand;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hairline rule */
+  .rule {
+    @apply h-px w-full bg-border;
+  }
+
+  /* ---------- Headings ---------- */
+  .h-section {
+    @apply font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl lg:text-5xl;
+    line-height: 1.04;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200;
+  }
+  .btn-primary {
+    @apply btn bg-brand-dark text-white;
+  }
+  .btn-primary:hover {
+    @apply shadow-btn-brand;
+    background: #2D5BFF;
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-accent {
+    @apply btn bg-accent text-white;
+  }
+  .btn-accent:hover {
+    @apply shadow-btn-accent;
+    background: #F26A6E;
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    @apply btn border border-border-strong bg-transparent text-ink;
+  }
+  .btn-ghost:hover {
+    @apply border-brand text-brand-deep;
+    transform: translateY(-1px);
+  }
+
+  /* ---------- Sections ---------- */
+  .section {
+    @apply py-20 md:py-28;
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    @apply rounded-2xl border border-border bg-surface-raised p-6 shadow-card;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-interactive {
+    @apply card;
+  }
+  .card-interactive:hover {
+    @apply shadow-card-hover;
+    transform: translateY(-3px);
+    border-color: rgba(45, 91, 255, 0.35);
+  }
+  .card-tilt {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transition: transform 0.1s ease-out;
+  }
+
+  /* ---------- Nav links ---------- */
+  .nav-link {
+    @apply text-sm font-medium text-ink-soft;
+    position: relative;
+    padding-bottom: 2px;
+    transition: color 0.25s ease;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: #2D5BFF;
+    border-radius: 1px;
+    transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-link:hover { @apply text-ink; }
+  .nav-link:hover::after { width: 100%; }
+
+  /* ---------- Text gradient (kept for API compatibility) ---------- */
+  .text-gradient-brand {
+    background: linear-gradient(135deg, #2D5BFF, #5C82FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ---------- Glass ---------- */
+  .glass {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+}
+
+/* ===== SCROLL REVEAL (GSAP-driven, no-FOUC) ===== */
+html.fx-ready [data-fx="reveal"] {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.fx-ready [data-fx="reveal"] {
+    opacity: 1;
+  }
+}
+
+/* Line-reveal masks (cinematic heading reveals) */
+.split-line {
+  display: block;
+  overflow: hidden;
+}
+.split-line > span {
+  display: block;
+  will-change: transform;
+}
+
+/* Image reveal frames (clip wipe handled in JS, but keep a safe base) */
+[data-reveal-img] {
+  overflow: hidden;
+}
+
+/* ===== GARAGE-DOOR HERO REVEAL ===== */
+/* Decorative sectional door overlay — depth via top-light + inner/cast shadows. */
+.door-panel {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -9px 16px rgba(0, 0, 0, 0.20),
+    0 5px 12px rgba(0, 0, 0, 0.18);
+  will-change: transform;
+}
+/* Reduced-motion / no-JS-friendly: the door never blocks the (always-visible) hero. */
+@media (prefers-reduced-motion: reduce) {
+  [data-door] { display: none !important; }
+}
+
+/* Continuing slat/track motif: faint horizontal panel lines (used on the CTA band). */
+.panel-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.06) 0,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px,
+    transparent 64px
+  );
+}
+
+/* ===== ACCORDION ===== */
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.accordion-content.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.accordion-content > div {
+  overflow: hidden;
+}
+
+/* ===== TURNSTILE ===== */
+.cf-turnstile { min-height: 65px; border-radius: 10px; overflow: hidden; }
+.cf-turnstile iframe { border-radius: 10px; }
+
+/* ===== FORM FOCUS ===== */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2D5BFF !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 91, 255, 0.14);
+}
+
+/* ===== MAGNETIC ===== */
+.magnetic-wrap {
+  display: inline-flex;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===== PULSE DOT ===== */
+.pulse-dot { position: relative; }
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* ===== DROP ZONE ===== */
+.drop-zone {
+  border: 2px dashed #D3D7DD;
+  transition: all 0.3s ease;
+}
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: #2D5BFF;
+  background: rgba(45, 91, 255, 0.04);
+}
+
+/* ===== SCROLL PROGRESS ===== */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: #2D5BFF;
+  transform-origin: left;
+  z-index: 9999;
+  transition: transform 0.1s linear;
+}
+
+/* ===== STAGGER CHILDREN ===== */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fade-in-up 0.55s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.19s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.26s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.33s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.40s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.47s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.54s; }
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== PERFORMANCE ===== */
+.section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
+.animate-float,
+.animate-float-slow { will-change: transform; }
+
+img { image-rendering: -webkit-optimize-contrast; }
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-float,
+  .animate-float-slow,
+  .animate-pulse-ring,
+  .animate-marquee,
+  .stagger-children > * {
+    animation: none !important;
+  }
+  * { transition-duration: 0.01ms !important; }
+}

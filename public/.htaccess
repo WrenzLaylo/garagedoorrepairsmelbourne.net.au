@@ -1,0 +1,49 @@
+# Garage Door Repairs Melbourne — Apache config (cPanel / Linux hosting)
+
+# ── Force HTTPS + canonical non-www ──
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # http → https
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # www → non-www
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+  # ── SPA fallback: serve index.html for any non-file, non-directory request ──
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/quote-submit\.php$
+  RewriteRule ^ /index.html [L]
+</IfModule>
+
+# ── Security headers ──
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+  # Long-cache hashed build assets
+  <FilesMatch "\.(js|css|woff2|webp|avif|png|jpg|jpeg|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Never cache the HTML shell
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# ── Compression ──
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# ── Block dotfiles (e.g. quote-form-config.php is one dir up, but be safe) ──
+<FilesMatch "(^\.|/\.)">
+  Require all denied
+</FilesMatch>
+
+ErrorDocument 404 /index.html

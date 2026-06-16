@@ -1,0 +1,41 @@
+{
+  "_about": "Single source of truth for every photographic asset the site loads. An image-gen pass should read this, generate each image to its exact `path`, then stop. Until a real asset exists, the site shows the existing branded image. Global style: photorealistic, bright, clean, professional Australian garage-door trade, natural daylight, realistic colours, crisp focus, no text, no logos, no watermarks, not cheesy.",
+  "images": [
+    {
+      "filename": "hero-technician-branded.webp",
+      "path": "public/assets/hero-technician-branded.webp",
+      "purpose": "Hero portrait-frame image (right column, 4:5).",
+      "aspect_ratio": "4:5",
+      "width": 1200,
+      "height": 1500,
+      "format": "webp",
+      "where_used": "Hero.tsx right-column framed photo (cinematic reveal + parallax)",
+      "alt_text": "Garage door technician servicing a sectional door in Melbourne",
+      "prompt": "A professional Australian garage door technician in clean branded workwear servicing a modern sectional panel-lift garage door on a bright suburban Melbourne home, natural daylight, vertical 4:5 composition, calm and trustworthy."
+    },
+    {
+      "filename": "melbourne-technician-branded.webp",
+      "path": "public/assets/melbourne-technician-branded.webp",
+      "purpose": "Secondary technician / trust imagery.",
+      "aspect_ratio": "4:3",
+      "width": 1200,
+      "height": 900,
+      "format": "webp",
+      "where_used": "Reserved for trust / about imagery",
+      "alt_text": "Garage door technician in Melbourne completing a repair",
+      "prompt": "A friendly Australian tradesperson kneeling beside an open garage door holding a torsion spring and tools, suburban Melbourne driveway, bright natural light."
+    },
+    {
+      "filename": "technician-door-service-branded.webp",
+      "path": "public/assets/technician-door-service-branded.webp",
+      "purpose": "Service / maintenance imagery.",
+      "aspect_ratio": "4:3",
+      "width": 1200,
+      "height": 900,
+      "format": "webp",
+      "where_used": "Reserved for service / FAQ support imagery",
+      "alt_text": "Technician adjusting a garage door opener motor",
+      "prompt": "Close-up of a technician's hands adjusting a ceiling-mounted garage door opener motor with a screwdriver, residential garage interior, clean and well-lit."
+    }
+  ]
+}
