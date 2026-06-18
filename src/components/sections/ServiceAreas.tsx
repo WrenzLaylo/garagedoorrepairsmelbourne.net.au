@@ -329,11 +329,13 @@ export default function ServiceAreas() {
     <section id="service-areas" className="section bg-surface">
       <div className="container-x">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow mb-4">Coverage</span>
-          <h2 className="h-section">We Cover All of Melbourne</h2>
+          <span className="kicker mb-4 justify-center">
+            <span className="num">06</span><span className="sep">/</span>COVERAGE
+          </span>
+          <h2 className="h-section">Greater Melbourne, mapped.</h2>
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
             From the CBD to the outer suburbs — our technicians are positioned
-            across Melbourne for fast response times wherever you are. Click a
+            across Melbourne for fast response times wherever you are. Tap a
             suburb to pinpoint it on the map.
           </p>
         </ScrollReveal>
@@ -341,15 +343,15 @@ export default function ServiceAreas() {
         <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:items-start">
           {/* Left: pill cloud + legend */}
           <ScrollReveal direction="left">
-            <div className="rounded-2xl border border-border bg-surface-raised p-7 shadow-card">
+            <div className="panel-tick rounded-lg border border-border bg-surface-raised p-7 shadow-card">
               <div className="mb-5 flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-light">Suburbs we service</p>
+                <p className="font-mono text-[11px] font-bold uppercase tracking-mono text-ink-light">Suburbs we service</p>
                 {(activeSuburb || activeRegion) && (
                   <button
                     onClick={resetMap}
-                    className="text-xs font-semibold text-brand hover:underline"
+                    className="font-mono text-[11px] font-bold uppercase tracking-wider text-brand hover:underline"
                   >
-                    Reset map ↺
+                    Reset ↺
                   </button>
                 )}
               </div>
@@ -364,7 +366,7 @@ export default function ServiceAreas() {
                     <button
                       key={suburb}
                       onClick={() => flyToSuburb(suburb)}
-                      className="rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5"
+                      className="rounded-md border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5"
                       style={{
                         borderColor: isActive
                           ? regionData?.color
@@ -393,7 +395,7 @@ export default function ServiceAreas() {
                     </button>
                   );
                 })}
-                <span className="inline-flex cursor-default items-center gap-1.5 rounded-full border border-dashed border-brand/40 bg-brand/5 px-3 py-1.5 text-xs font-semibold text-brand">
+                <span className="inline-flex cursor-default items-center gap-1.5 rounded-md border border-dashed border-brand/40 bg-brand/5 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-brand">
                   + many more
                 </span>
               </div>
@@ -442,26 +444,26 @@ export default function ServiceAreas() {
             {/* CTA */}
             <a
               href={CONTACT.phoneTel}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink-inverse transition-all duration-200 hover:bg-brand-light hover:shadow-md"
+              className="btn-call mt-5 w-full py-3.5 text-sm"
             >
               <Phone className="h-4 w-4" aria-hidden="true" />
-              {CONTACT.phone} — Call the Melbourne Team
+              Call {CONTACT.phone} — Melbourne team
             </a>
           </ScrollReveal>
 
           {/* Right: Leaflet map */}
           <ScrollReveal direction="right" delay={120}>
             <div
-              className="overflow-hidden rounded-2xl border border-border shadow-card"
+              className="overflow-hidden rounded-lg border border-border-strong shadow-card"
               style={{ height: "520px", position: "relative" }}
             >
               <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
               <div
-                className="pointer-events-none absolute left-3 top-3 z-[1000] rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-white"
-                style={{ background: "rgba(11,11,13,0.82)", backdropFilter: "blur(8px)" }}
+                className="pointer-events-none absolute left-3 top-3 z-[1000] rounded-md px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-mono text-white"
+                style={{ background: "rgba(11,11,13,0.85)", backdropFilter: "blur(8px)" }}
               >
-                Greater Melbourne — Service Coverage
+                GREATER MELBOURNE — COVERAGE MAP
               </div>
 
               {(activeSuburb || activeRegion) && (

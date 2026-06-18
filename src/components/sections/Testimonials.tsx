@@ -17,43 +17,37 @@ function TestimonialCard({ t, index }: { t: typeof TESTIMONIALS[number]; index: 
   return (
     <article
       key={`${t.name}-${index}`}
-      className="group/card relative flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface-raised p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1"
+      className="panel-tick group/card relative flex w-80 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-surface-raised shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1"
       draggable={false}
     >
-      <svg className="pointer-events-none absolute -right-2 -top-2 h-16 w-16 text-brand/[0.06] transition-all duration-500 group-hover/card:scale-125 group-hover/card:text-brand/[0.12]" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
-        <path d="M20 65c0-16 10-31 28-40l5 8C40 40 36 50 36 56h12v24H20V65zm40 0c0-16 10-31 28-40l5 8C80 40 76 50 76 56h12v24H60V65z" />
-      </svg>
-
-      <div className="flex items-center gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={i} className={`h-4 w-4 ${i < t.rating ? "fill-gold text-gold" : "text-border-strong"}`} aria-hidden="true" />
-        ))}
+      {/* Spec header strip */}
+      <div className="flex items-center justify-between border-b border-border px-5 py-3">
+        <div className="flex items-center gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className={`h-3.5 w-3.5 ${i < t.rating ? "fill-gold text-gold" : "text-border-strong"}`} aria-hidden="true" />
+          ))}
+        </div>
+        <span className="font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light">{t.date}</span>
       </div>
 
-      {t.serviceType && (
-        <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/[0.07] px-3 py-1 text-xs font-semibold tracking-wide text-brand">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-pulse-soft rounded-full bg-brand/60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
+      <div className="flex flex-1 flex-col p-5">
+        {t.serviceType && (
+          <span className="inline-flex w-fit items-center gap-1.5 rounded border border-brand/20 bg-brand/[0.06] px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-brand-deep">
+            {t.serviceType}
           </span>
-          {t.serviceType}
-        </span>
-      )}
+        )}
 
-      <blockquote className="relative z-10 mt-4 flex-1 text-sm leading-relaxed text-ink-soft">
-        &ldquo;{t.text}&rdquo;
-      </blockquote>
+        <blockquote className="relative z-10 mt-4 flex-1 text-sm leading-relaxed text-ink-soft">
+          &ldquo;{t.text}&rdquo;
+        </blockquote>
 
-      <footer className="relative mt-5 pt-4">
-        <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-bold text-ink transition-colors duration-300 group-hover/card:text-brand">{t.name}</p>
-            <p className="mt-0.5 text-xs text-ink-soft">{t.suburb}</p>
+        <footer className="mt-5 border-t border-dashed border-border pt-4">
+          <div className="flex items-center justify-between">
+            <p className="font-display text-sm font-semibold text-ink transition-colors duration-300 group-hover/card:text-brand">{t.name}</p>
+            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-light">{t.suburb}</p>
           </div>
-          <time className="rounded-md bg-surface-alt px-2.5 py-1 text-xs font-medium text-ink-light">{t.date}</time>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </article>
   );
 }
@@ -185,16 +179,19 @@ export default function Testimonials() {
     <section id="reviews" className="section bg-surface-alt overflow-hidden">
       <div className="container-x">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow mb-4">Reviews</span>
-          <h2 className="h-section">What Our Customers Say</h2>
+          <span className="kicker mb-4">
+            <span className="num">03</span><span className="sep">/</span>FIELD REPORTS
+          </span>
+          <h2 className="h-section">700+ reviews. 4.8 stars. Verified.</h2>
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
-            AGG Doors has 700+ Google reviews with a 4.8-star rating. We link directly to the source so you can verify the latest feedback before booking.
+            We link straight to the source — so you can verify the latest AGG Doors feedback before
+            you book. No cherry-picking.
           </p>
           <a
             href={PARENT_BRAND.reviewsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group/link mt-5 inline-flex items-center gap-2 rounded-full bg-brand/[0.06] px-5 py-2 text-sm font-semibold text-brand transition-all duration-300 hover:bg-brand/[0.12] hover:shadow-sm"
+            className="group/link mt-5 inline-flex items-center gap-2 rounded-md border border-border-strong px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-ink transition-all duration-300 hover:border-brand hover:text-brand-deep"
           >
             View Google Reviews
             <svg className="h-4 w-4 transition-transform duration-300 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -207,16 +204,16 @@ export default function Testimonials() {
         <ScrollReveal className="mt-8 flex flex-wrap justify-center gap-2" delay={80}>
           <button
             onClick={() => setActiveFilter(null)}
-            className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-150 hover:-translate-y-0.5 ${
+            className={`inline-flex items-center gap-1.5 rounded-md border px-3.5 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider transition-all duration-150 hover:-translate-y-0.5 ${
               activeFilter === null
-                ? "border-brand bg-brand text-ink-inverse shadow-sm"
-                : "border-border bg-surface-raised text-ink-soft hover:border-brand/30 hover:text-brand"
+                ? "border-brand bg-brand text-white shadow-sm"
+                : "border-border bg-surface-raised text-ink-soft hover:border-brand/40 hover:text-brand"
             }`}
             aria-pressed={activeFilter === null}
           >
-            All reviews
-            <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${activeFilter === null ? "bg-black/20 text-ink-inverse" : "bg-surface-alt text-ink-light"}`}>
-              {TESTIMONIALS.length}
+            All
+            <span className={`tabular-nums ${activeFilter === null ? "text-white/70" : "text-ink-light"}`}>
+              [{TESTIMONIALS.length}]
             </span>
           </button>
           {SERVICE_TYPES.map((type) => {
@@ -226,17 +223,15 @@ export default function Testimonials() {
               <button
                 key={type}
                 onClick={() => setActiveFilter(isActive ? null : type)}
-                className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-150 hover:-translate-y-0.5 ${
+                className={`inline-flex items-center gap-1.5 rounded-md border px-3.5 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider transition-all duration-150 hover:-translate-y-0.5 ${
                   isActive
-                    ? "border-accent bg-accent text-white shadow-sm"
-                    : "border-border bg-surface-raised text-ink-soft hover:border-accent/30 hover:text-accent"
+                    ? "border-brand bg-brand text-white shadow-sm"
+                    : "border-border bg-surface-raised text-ink-soft hover:border-brand/40 hover:text-brand"
                 }`}
                 aria-pressed={isActive}
               >
                 {type}
-                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-white/20 text-white" : "bg-surface-alt text-ink-light"}`}>
-                  {count}
-                </span>
+                <span className={`tabular-nums ${isActive ? "text-white/70" : "text-ink-light"}`}>[{count}]</span>
               </button>
             );
           })}
@@ -246,6 +241,7 @@ export default function Testimonials() {
       {/* Carousel OR centered static grid */}
       {useScrollMode ? (
         <div
+          data-fx="reveal"
           className="relative mt-10"
           onMouseEnter={() => { isHovered.current = true; }}
           onMouseLeave={() => { isHovered.current = false; onMouseUp(); }}
@@ -302,7 +298,7 @@ export default function Testimonials() {
       ) : (
         /* Static centered grid for small filtered sets */
         <div className="container-x mt-10">
-          <div className="flex flex-wrap justify-center gap-5 pb-4">
+          <div data-stagger className="flex flex-wrap justify-center gap-5 pb-4">
             {filtered.map((t, index) => (
               <TestimonialCard key={`${t.name}-${index}`} t={t} index={index} />
             ))}

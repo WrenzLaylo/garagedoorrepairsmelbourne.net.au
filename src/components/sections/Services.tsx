@@ -9,7 +9,7 @@ import {
   Key,
   AlertTriangle,
   ShieldCheck,
-  ArrowRight,
+  ArrowUpRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -37,31 +37,61 @@ const SERVICE_CATEGORIES: Record<string, FilterId[]> = {
   "maintenance": ["repair"],
 };
 
-function ServiceCard({ service, index }: { service: (typeof SERVICES)[number]; index: number }) {
+const REF_CODES: Record<string, string> = {
+  "repairs": "SVC-RPR",
+  "springs-cables": "SVC-SPR",
+  "motors-automation": "SVC-MOT",
+  "remotes-controls": "SVC-RMT",
+  "emergency": "SVC-911",
+  "maintenance": "SVC-MNT",
+  "supply-install": "SVC-NEW",
+};
+
+/** A single ledger-style row in the services index. */
+function ServiceRow({ service, index }: { service: (typeof SERVICES)[number]; index: number }) {
   const Icon = ICON_MAP[service.icon] ?? Wrench;
+  const isEmergency = service.id === "emergency";
   return (
-    <article className="group relative flex h-full flex-col rounded-2xl border border-border bg-surface-raised p-7 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-brand/40 hover:shadow-card-hover">
-      <div className="flex items-start justify-between">
-        <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-tint text-brand-deep transition-colors duration-300 group-hover:bg-brand group-hover:text-white">
-          <Icon className="h-6 w-6" aria-hidden="true" />
-        </span>
-        <span className="index-num text-2xl text-brand/25 transition-colors duration-300 group-hover:text-brand/60">
+    <a
+      href="#contact"
+      className="group relative grid grid-cols-[auto_1fr_auto] items-start gap-4 border-t border-border px-3 py-7 transition-colors duration-300 hover:bg-surface-alt md:gap-7 md:px-5"
+    >
+      {/* Index + ref */}
+      <div className="flex flex-col items-start">
+        <span className={`font-display text-3xl font-semibold tabular-nums leading-none transition-colors duration-300 md:text-4xl ${isEmergency ? "text-accent/40 group-hover:text-accent" : "text-border-strong group-hover:text-brand"}`}>
           {String(index + 1).padStart(2, "0")}
+        </span>
+        <span className="mt-2 hidden font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light sm:block">
+          {REF_CODES[service.id] ?? "SVC"}
         </span>
       </div>
 
-      <h3 className="mt-6 font-display text-xl font-bold text-ink">{service.title}</h3>
-      <p className="mt-2.5 flex-1 text-sm leading-relaxed text-ink-soft">{service.desc}</p>
+      {/* Body */}
+      <div className="min-w-0">
+        <div className="flex items-center gap-3">
+          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-md transition-colors duration-300 ${isEmergency ? "bg-accent/10 text-accent" : "bg-brand-tint text-brand-deep group-hover:bg-brand group-hover:text-white"}`}>
+            <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+          </span>
+          <h3 className="font-display text-xl font-semibold text-ink md:text-2xl">{service.title}</h3>
+        </div>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">{service.desc}</p>
+        <ul className="mt-4 flex flex-wrap gap-x-2 gap-y-2">
+          {service.features.map((f) => (
+            <li
+              key={f}
+              className="rounded border border-border bg-surface px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-ink-soft transition-colors duration-300 group-hover:border-brand/30"
+            >
+              {f}
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      <ul className="mt-5 space-y-2 border-t border-border pt-5">
-        {service.features.map((f) => (
-          <li key={f} className="flex items-start gap-2.5 text-xs text-ink-soft">
-            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden="true" />
-            {f}
-          </li>
-        ))}
-      </ul>
-    </article>
+      {/* Arrow */}
+      <span className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-md border border-border text-ink-light transition-all duration-300 group-hover:border-brand group-hover:bg-brand group-hover:text-white">
+        <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:rotate-0" aria-hidden="true" />
+      </span>
+    </a>
   );
 }
 
@@ -78,15 +108,17 @@ export default function Services() {
         <ScrollReveal>
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
-              <span className="index-eyebrow mb-4"><span className="num">02</span> / What we fix</span>
-              <h2 className="h-section">Garage door repairs &amp; servicing.</h2>
+              <span className="kicker mb-4">
+                <span className="num">02</span><span className="sep">/</span>WHAT WE FIX
+              </span>
+              <h2 className="h-section">A full index of garage door repairs.</h2>
               <p className="mt-4 text-base text-ink-soft">
-                From a snapped spring to a dead motor or an emergency call-out — we diagnose and
-                repair every part of your garage door. No subbies, no surprises.
+                From a snapped spring to a dead motor or an emergency call-out — every part of your
+                garage door, diagnosed and repaired. No subbies, no surprises.
               </p>
             </div>
 
-            {/* Minimal underline filter tabs */}
+            {/* Underline filter tabs */}
             <div className="flex flex-wrap gap-x-6 gap-y-2" role="tablist" aria-label="Filter services">
               {FILTERS.map((f) => {
                 const active = activeFilter === f.id;
@@ -96,12 +128,12 @@ export default function Services() {
                     role="tab"
                     aria-selected={active}
                     onClick={() => setActiveFilter(f.id)}
-                    className={`relative pb-1 text-sm font-semibold transition-colors duration-200 ${
+                    className={`relative pb-1 font-mono text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${
                       active ? "text-brand-deep" : "text-ink-light hover:text-ink"
                     }`}
                   >
                     {f.label}
-                    <span className={`absolute -bottom-px left-0 h-0.5 rounded-full bg-brand transition-all duration-300 ${active ? "w-full" : "w-0"}`} />
+                    <span className={`absolute -bottom-px left-0 h-0.5 bg-brand transition-all duration-300 ${active ? "w-full" : "w-0"}`} />
                   </button>
                 );
               })}
@@ -109,20 +141,24 @@ export default function Services() {
           </div>
         </ScrollReveal>
 
-        <div key={activeFilter} className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((service, i) => (
-            <ScrollReveal key={service.id} delay={i * 60}>
-              <ServiceCard service={service} index={i} />
-            </ScrollReveal>
-          ))}
+        {/* Ledger index — rows lift/uncover in a staggered sweep; the rig's
+            MutationObserver re-animates the set when the filter changes. */}
+        <div data-stagger className="mt-12 border-b border-border">
+          {filtered.map((service) => {
+            const realIndex = SERVICES.findIndex((s) => s.id === service.id);
+            return <ServiceRow key={service.id} service={service} index={realIndex} />;
+          })}
         </div>
 
-        <ScrollReveal className="mt-14">
-          <div className="flex flex-col items-start justify-between gap-5 rounded-2xl border border-border bg-surface-alt p-7 sm:flex-row sm:items-center">
-            <p className="font-display text-xl font-bold text-ink">Not sure what's wrong? We'll diagnose it.</p>
+        <ScrollReveal className="mt-12">
+          <div className="panel-tick flex flex-col items-start justify-between gap-5 rounded-lg border border-border bg-surface-alt p-7 sm:flex-row sm:items-center">
+            <div>
+              <span className="font-mono text-[11px] font-bold uppercase tracking-mono text-brand-deep">DIAGNOSIS FIRST</span>
+              <p className="mt-2 font-display text-xl font-semibold text-ink">Not sure what's wrong? We'll find the real fault.</p>
+            </div>
             <a href="#contact" className="btn-primary shrink-0">
               Get a free quote
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </a>
           </div>
         </ScrollReveal>

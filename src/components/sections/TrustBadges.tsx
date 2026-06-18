@@ -1,30 +1,53 @@
-import ScrollReveal from "../ui/ScrollReveal";
+/**
+ * Brand / trust TICKER — a moving mono marquee on a dark engineered band.
+ * Replaces the old static badge row. Duplicated track loops seamlessly via
+ * the `ticker` keyframe (disabled under prefers-reduced-motion).
+ */
+const ITEMS: { label: string; accent?: boolean }[] = [
+  { label: "ALL MAJOR BRANDS", accent: true },
+  { label: "B&D" },
+  { label: "DOMINATOR" },
+  { label: "MERLIN" },
+  { label: "GLIDEROL" },
+  { label: "CENTURION" },
+  { label: "ATA" },
+  { label: "STEEL-LINE" },
+  { label: "GRIFCO" },
+  { label: "24/7 EMERGENCY", accent: true },
+  { label: "MOST FIXED IN 1–2 HRS" },
+  { label: "AUTHORISED REPAIRS" },
+];
 
-const BRANDS = ["B&D", "Dominator", "Merlin", "Gliderol", "Centurion", "ATA"];
+function Row() {
+  return (
+    <div className="ticker-track animate-ticker" aria-hidden="true">
+      {ITEMS.concat(ITEMS).map((it, i) => (
+        <span key={i} className="flex items-center">
+          <span
+            className={`px-7 font-mono text-sm font-bold uppercase tracking-[0.16em] ${
+              it.accent ? "text-brand-light" : "text-white/80"
+            }`}
+          >
+            {it.label}
+          </span>
+          <span className="text-brand" aria-hidden="true">✳</span>
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function TrustBadges() {
   return (
-    <section className="border-b border-border bg-surface py-12 md:py-14">
-      <div className="container-x">
-        <ScrollReveal>
-          <div className="flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
-            <p className="shrink-0 text-center text-xs font-semibold uppercase tracking-label text-ink-light lg:max-w-[12rem] lg:text-left">
-              Authorised to service &amp; repair all major brands
-            </p>
-            <div className="h-px w-full bg-border lg:h-10 lg:w-px" aria-hidden="true" />
-            <div className="flex flex-1 flex-wrap items-center justify-center gap-x-10 gap-y-4 lg:justify-between">
-              {BRANDS.map((name) => (
-                <span
-                  key={name}
-                  className="font-display text-xl font-bold tracking-tight text-ink-light transition-colors duration-200 hover:text-brand"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </ScrollReveal>
+    <section className="relative overflow-hidden border-y border-ink bg-ink py-4">
+      <div className="panel-lines pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" />
+      <div className="ticker-mask relative">
+        <Row />
       </div>
+      <span className="sr-only">
+        Authorised to service and repair all major garage door brands including B&amp;D,
+        Dominator, Merlin, Gliderol, Centurion and ATA. 24/7 emergency repairs across Melbourne.
+      </span>
     </section>
   );
 }

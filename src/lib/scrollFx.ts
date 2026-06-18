@@ -6,9 +6,8 @@ gsap.registerPlugin(ScrollTrigger);
 /**
  * Cinematic, accessibility-first scroll rig (pairs with lib/smoothScroll Lenis).
  *
- * Signature feature: a SCROLL-DRIVEN garage-door reveal that IS the hero. The door
- * (`[data-door]` over always-visible hero content) lifts on scrub as the hero pins,
- * then releases into the page. Content is never hidden by JS — the door is overlay-only.
+ * The hero intro is a looping 3D garage-parts backdrop (see lib/heroParts3D), mounted
+ * by Hero.tsx — it is NOT scroll-driven and never covers the hero content.
  *
  * Declarative data-API for the rest of the page:
  *   data-fx="reveal" [data-fx-from] [data-fx-delay]   → fade/translate in
@@ -16,17 +15,31 @@ gsap.registerPlugin(ScrollTrigger);
  *   data-parallax [data-speed]                         → layered depth on scroll
  *   data-count [data-count-suffix]                     → number counts up on enter
  *
- * Reduced-motion: no Lenis/pin/parallax; CSS hides the door; everything visible.
- * Fail-safe: any error → reveal all + hide the door (never trap content behind it).
+ * Garage-door motion language continued through the page:
+ *   data-stagger                → children lift in sequence like sectional panels
+ *   data-panel-reveal           → single element rises + clip-wipes up like a panel
+ *   data-track-reveal           → a rail/track line draws in
+ *   data-rail                   → How-It-Works roller scrubs along its track
+ *   data-door-open              → final CTA: a steel valance lifts to bright light
+ *
+ * Reduced-motion: no Lenis/parallax; everything visible.
+ * Fail-safe: any error → reveal all (never trap content at opacity 0).
  */
+const observers: MutationObserver[] = [];
+
 export function initScrollFx(): () => void {
   const root = document.documentElement;
 
   const revealAll = () => {
     root.classList.remove("fx-ready");
-    document.querySelectorAll<HTMLElement>('[data-fx="reveal"]').forEach((el) => { el.style.opacity = "1"; });
+    observers.forEach((o) => o.disconnect());
+    observers.length = 0;
+    document.querySelectorAll<HTMLElement>('[data-fx="reveal"], [data-panel-reveal]').forEach((el) => { el.style.opacity = "1"; });
+    document.querySelectorAll<HTMLElement>("[data-stagger]").forEach((c) => {
+      Array.from(c.children).forEach((el) => { (el as HTMLElement).style.opacity = "1"; (el as HTMLElement).style.clipPath = "none"; (el as HTMLElement).style.transform = "none"; });
+    });
     document.querySelectorAll<HTMLElement>('[data-reveal-img]').forEach((el) => { el.style.clipPath = "none"; });
-    document.querySelectorAll<HTMLElement>("[data-door]").forEach((el) => { el.style.display = "none"; });
+    document.querySelectorAll<HTMLElement>(".door-open-overlay, .door-open-glow").forEach((el) => { el.remove(); });
   };
 
   let ctx: gsap.Context | undefined;
@@ -39,29 +52,32 @@ export function initScrollFx(): () => void {
       const OK = "(prefers-reduced-motion: no-preference)";
 
       mm.add(REDUCE, () => {
-        gsap.set('[data-fx="reveal"]', { clearProps: "all", opacity: 1 });
+        gsap.set('[data-fx="reveal"], [data-panel-reveal]', { clearProps: "all", opacity: 1 });
+        gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((c) => gsap.set(Array.from(c.children), { clearProps: "all", opacity: 1 }));
         runCounters();
       });
 
       mm.add(OK, () => {
         setupReveals();
         setupImageReveals();
+        setupPanelReveals();
+        setupStagger();
+        setupTrackReveals();
+        setupRails();
+        setupDoorOpen();
         runCounters();
       });
 
-      // Garage-door hero + layered parallax — desktop / precise pointer (with pin)
+      // Layered parallax — desktop / precise pointer
       mm.add(`${OK} and (min-width: 768px) and (pointer: fine)`, () => {
-        setupGarageDoor(true);
         setupParallax(1);
       });
-      // Small screens — door opens without a pin (no jank), softened parallax
+      // Small screens — softened parallax
       mm.add(`${OK} and (max-width: 767px)`, () => {
-        setupGarageDoor(false);
         setupParallax(0.45);
       });
-      // Large touch — no pin, softened
+      // Large touch — softened
       mm.add(`${OK} and (min-width: 768px) and (pointer: coarse)`, () => {
-        setupGarageDoor(false);
         setupParallax(0.5);
       });
     });
@@ -79,42 +95,6 @@ export function initScrollFx(): () => void {
     ctx?.revert();
     root.classList.remove("fx-ready");
   };
-}
-
-/** The scroll-driven sectional garage-door reveal that opens the hero. */
-function setupGarageDoor(pin: boolean) {
-  const hero = document.querySelector<HTMLElement>("[data-hero]");
-  if (!hero) return;
-  const panels = gsap.utils.toArray<HTMLElement>("[data-door-panel]", hero);
-  if (!panels.length) return;
-
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: hero,
-      start: "top top",
-      end: pin ? "+=90%" : "bottom top",
-      scrub: true,
-      pin,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-    },
-  });
-
-  // Panels lift out the top, bottom-first (opening grows from the floor up)
-  tl.to(panels, {
-    yPercent: -460,
-    ease: "none",
-    stagger: { each: 0.12, from: "end" },
-  }, 0);
-
-  // Cue fades immediately; photo + layers gain depth as the door opens
-  tl.to("[data-door-cue]", { opacity: 0, ease: "none", duration: 0.25 }, 0);
-  tl.fromTo("[data-hero-photo]", { scale: 1.14 }, { scale: 1, ease: "none" }, 0);
-  tl.to("[data-hero-content]", { y: -30, ease: "none" }, 0);
-  tl.to("[data-hero-layer]", {
-    y: (_i, t) => parseFloat((t as HTMLElement).dataset.depth || "0") * 0.6,
-    ease: "none",
-  }, 0);
 }
 
 function setupReveals() {
@@ -142,6 +122,107 @@ function setupImageReveals() {
     const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: "top 85%", once: true } });
     tl.fromTo(el, { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 1, ease: "power3.inOut" });
     if (img) tl.fromTo(img, { scale: 1.25 }, { scale: 1, duration: 1.2, ease: "power3.out" }, 0);
+  });
+}
+
+/** Single element rises + clip-wipes upward like a sectional panel lifting.
+ *  fromTo's immediateRender hides it ONLY once this trigger is built — fail-open. */
+function setupPanelReveals() {
+  gsap.utils.toArray<HTMLElement>("[data-panel-reveal]").forEach((el) => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 56, clipPath: "inset(0 0 100% 0)", willChange: "transform, clip-path, opacity" },
+      {
+        opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)",
+        duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: el, start: "top 88%", once: true },
+        onComplete: () => gsap.set(el, { clearProps: "clipPath,willChange" }),
+      });
+  });
+}
+
+/** Children of [data-stagger] lift + uncover in sequence, like door panels rising.
+ *  Each batch is only hidden the moment its tween/trigger is created (fail-open). */
+function setupStagger() {
+  const reveal = (items: Element[], stagger: number, scrollTrigger?: ScrollTrigger.Vars) => {
+    if (!items.length) return;
+    gsap.fromTo(items,
+      { opacity: 0, y: 52, clipPath: "inset(0 0 100% 0)" },
+      {
+        opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)",
+        duration: 0.8, ease: "power3.out",
+        stagger: { each: stagger, from: "start" },
+        ...(scrollTrigger ? { scrollTrigger } : {}),
+        onComplete: () => gsap.set(items, { clearProps: "clipPath" }),
+      });
+  };
+
+  gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((container) => {
+    reveal(Array.from(container.children), 0.1, { trigger: container, start: "top 84%", once: true });
+
+    // Re-animate items added later (e.g. when a filter swaps the card set).
+    const mo = new MutationObserver((mutations) => {
+      const added: Element[] = [];
+      mutations.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) added.push(n as Element); }));
+      if (added.length) reveal(added, 0.07);
+    });
+    mo.observe(container, { childList: true });
+    observers.push(mo);
+  });
+}
+
+/** A rail/track line draws in from its leading edge (horizontal or vertical). */
+function setupTrackReveals() {
+  gsap.utils.toArray<HTMLElement>("[data-track-reveal]").forEach((el) => {
+    const vertical = el.offsetHeight > el.offsetWidth;
+    gsap.fromTo(el,
+      vertical ? { scaleY: 0, transformOrigin: "top" } : { scaleX: 0, transformOrigin: "left" },
+      {
+        scaleX: 1, scaleY: 1,
+        duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: el, start: "top 88%", once: true },
+      });
+  });
+}
+
+/** How-It-Works: a roller scrubs along the rail and the fill grows as you scroll. */
+function setupRails() {
+  gsap.utils.toArray<HTMLElement>("[data-rail]").forEach((rail) => {
+    const fill = rail.querySelector<HTMLElement>("[data-rail-fill]");
+    const roller = rail.querySelector<HTMLElement>("[data-rail-roller]");
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: rail, start: "top 78%", end: "bottom 55%", scrub: true },
+    });
+    if (fill) tl.fromTo(fill, { width: "0%" }, { width: "100%", ease: "none" }, 0);
+    if (roller) tl.fromTo(roller, { left: "0%", xPercent: -50 }, { left: "100%", xPercent: -50, ease: "none" }, 0);
+  });
+}
+
+/** Final CTA: a slim steel valance (door header) lifts away with a light bloom —
+ *  a premium reveal into the action, not a giant grey wall. Fully fail-open. */
+function setupDoorOpen() {
+  gsap.utils.toArray<HTMLElement>("[data-door-open]").forEach((el) => {
+    if (getComputedStyle(el).position === "static") el.style.position = "relative";
+
+    const glow = document.createElement("div");
+    glow.className = "door-open-glow";
+    const overlay = document.createElement("div");
+    overlay.className = "door-open-overlay";
+    const valance = document.createElement("i");
+    valance.className = "door-open-valance";
+    overlay.append(valance);
+    el.append(glow, overlay);
+
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: el, start: "top 88%", end: "top 42%", scrub: 0.6 },
+    });
+    tl.fromTo(valance, { yPercent: 0 }, { yPercent: -100, ease: "none" }, 0)
+      .fromTo(glow, { opacity: 0 }, { opacity: 0.6, ease: "none" }, 0)
+      .to(glow, { opacity: 0, ease: "none" }, 0.55);
+    // Remove the overlay once open so nothing is ever intercepted.
+    ScrollTrigger.create({
+      trigger: el, start: "top 42%",
+      onEnter: () => { overlay.remove(); glow.remove(); },
+    });
   });
 }
 

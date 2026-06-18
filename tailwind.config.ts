@@ -38,11 +38,13 @@ export default {
         gold: "#F5B100",
       },
       fontFamily: {
-        display: ['"Outfit"', "system-ui", "sans-serif"],
-        body: ['"Outfit"', "system-ui", "sans-serif"],
+        display: ['"Space Grotesk"', "system-ui", "sans-serif"],
+        body: ['"Inter Tight"', "system-ui", "sans-serif"],
+        mono: ['"Space Mono"', "ui-monospace", "SFMono-Regular", "monospace"],
       },
       letterSpacing: {
         label: "0.18em",
+        mono: "0.24em",
       },
       borderRadius: {
         lg: "0.5rem",
@@ -99,6 +101,14 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        ticker: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "blink-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.25" },
+        },
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
@@ -112,6 +122,8 @@ export default {
         "pulse-ring": "pulse-ring 2s ease-out infinite",
         "pulse-soft": "pulse-soft 2.5s ease-in-out infinite",
         marquee: "marquee 30s linear infinite",
+        ticker: "ticker 38s linear infinite",
+        "blink-soft": "blink-soft 1.6s ease-in-out infinite",
         shimmer: "shimmer 2s ease-in-out infinite",
       },
     },

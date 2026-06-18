@@ -17,6 +17,7 @@ import {
 import { CONTACT, BUSINESS } from "../../constants";
 import ScrollReveal from "../ui/ScrollReveal";
 import { trackCall, trackEvent } from "../../utils/analytics";
+import { getTurnstileResponse, loadTurnstile } from "../../utils/turnstile";
 
 interface Props {
   onCall: () => void;
@@ -75,11 +76,11 @@ const EMPTY_FORM: FormValues = {
   email: "",
   phone: "",
   suburb: "",
-  propertyType: "",
-  serviceType: "",
+  propertyType: "Residential",
+  serviceType: "Garage door repair",
   serviceFor: "Garage Door",
-  garageDoorType: "",
-  gateType: "",
+  garageDoorType: "Roller door",
+  gateType: "Swing gate",
   message: "",
   company: "",
 };
@@ -150,7 +151,7 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
 
   return (
     <div className="relative" ref={ref}>
-      <label className="mb-1.5 block text-xs font-semibold text-ink" id={`${id.current}-label`}>
+      <label className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light" id={`${id.current}-label`}>
         {label}
       </label>
       <button
@@ -164,7 +165,7 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
         aria-activedescendant={open ? `${id.current}-opt-${focused}` : undefined}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id.current}-err` : undefined}
-        className={`flex w-full items-center justify-between rounded-xl border bg-surface-raised px-4 py-3 text-left text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand/20 ${
+        className={`flex w-full items-center justify-between rounded-md border bg-surface-raised px-4 py-3 text-left text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand/20 ${
           error ? "border-accent" : "border-border hover:border-brand/40 hover:shadow-sm"
         }`}
       >
@@ -181,7 +182,7 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
           id={listId}
           role="listbox"
           aria-labelledby={`${id.current}-label`}
-          className="absolute z-30 mt-1.5 max-h-56 w-full overflow-auto rounded-xl border border-border bg-surface-raised py-1 shadow-xl animate-fade-in-scale"
+          className="absolute z-30 mt-1.5 max-h-56 w-full overflow-auto rounded-md border border-border bg-surface-raised py-1 shadow-xl animate-fade-in-scale"
           style={{ transformOrigin: "top" }}
         >
           {options.map((option, i) => (
@@ -218,7 +219,7 @@ interface ChipsProps {
 function Chips({ label, value, options, onChange }: ChipsProps) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-semibold text-ink">{label}</label>
+      <label className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light">{label}</label>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const active = value === option;
@@ -227,7 +228,7 @@ function Chips({ label, value, options, onChange }: ChipsProps) {
               key={option}
               type="button"
               onClick={() => onChange(option)}
-              className={`relative overflow-hidden rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
+              className={`relative overflow-hidden rounded-md border px-4 py-2 text-sm font-medium transition-all duration-300 ${
                 active
                   ? "border-brand bg-brand/10 text-brand shadow-sm"
                   : "border-border bg-surface-raised text-ink-soft hover:border-brand/40 hover:text-brand hover:shadow-sm"
@@ -256,13 +257,13 @@ interface InputFieldProps {
 function InputField({ id, label, value, onChange, error, type = "text", placeholder }: InputFieldProps) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor={id}>
+      <label className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light" htmlFor={id}>
         {label}
       </label>
       <input
         id={id}
         type={type}
-        className={`w-full rounded-xl border bg-surface-raised px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 focus:shadow-sm ${
+        className={`w-full rounded-md border bg-surface-raised px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 focus:shadow-sm ${
           error ? "border-accent" : "border-border hover:border-brand/30"
         }`}
         placeholder={placeholder}
@@ -297,17 +298,10 @@ export default function Contact({ onCall }: Props) {
   useEffect(() => {
     if (!HAS_TURNSTILE) return;
 
-    if (!document.querySelector("script[data-turnstile]")) {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      script.async = true;
-      script.defer = true;
-      script.setAttribute("data-turnstile", "true");
-      document.head.appendChild(script);
-    }
-
-    const interval = window.setInterval(() => {
-      if (window.turnstile && turnstileRef.current && widgetId.current === null) {
+    let cancelled = false;
+    loadTurnstile()
+      .then(() => {
+        if (cancelled || !window.turnstile || !turnstileRef.current || widgetId.current !== null) return;
         widgetId.current = window.turnstile.render(turnstileRef.current, {
           sitekey: TURNSTILE_KEY,
           theme: "light",
@@ -315,11 +309,10 @@ export default function Contact({ onCall }: Props) {
           "expired-callback": () => setSubmitError("Please complete the spam protection check again."),
           "error-callback": () => setSubmitError("Spam protection could not load. Please refresh and try again."),
         });
-        window.clearInterval(interval);
-      }
-    }, 300);
+      })
+      .catch(() => setSubmitError("Spam protection could not load. Please refresh and try again."));
 
-    return () => window.clearInterval(interval);
+    return () => { cancelled = true; };
   }, []);
 
   const update = (key: keyof FormValues, value: string) => {
@@ -376,7 +369,7 @@ export default function Contact({ onCall }: Props) {
       return;
     }
 
-    const token = (document.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement | null)?.value;
+    const token = getTurnstileResponse(widgetId.current, turnstileRef.current);
     if (!token) {
       setStatus("error");
       setSubmitError("Please complete the spam protection check before sending.");
@@ -435,8 +428,10 @@ export default function Contact({ onCall }: Props) {
       <div className="container-x grid gap-12 lg:grid-cols-2">
         {/* Left column */}
         <ScrollReveal direction="left">
-          <span className="eyebrow mb-4">Get a Quote</span>
-          <h2 className="h-section">Request Your Free Quote.</h2>
+          <span className="kicker mb-4">
+            <span className="num">08</span><span className="sep">/</span>GET A QUOTE
+          </span>
+          <h2 className="h-section">The fastest fix starts with a call.</h2>
           <p className="mt-3 text-ink-soft leading-relaxed">
             Tell us about the garage door system you need — supply, install, repair,
             automation, maintenance or emergency help. Prefer to talk? Call us any time.
@@ -446,42 +441,42 @@ export default function Contact({ onCall }: Props) {
             <a
               href={CONTACT.emergencyTel}
               onClick={() => trackCall("emergency")}
-              className="group flex items-center gap-3 rounded-2xl border border-accent/15 bg-surface-raised p-4 shadow-card transition-all duration-300 hover:border-accent/30 hover:shadow-card-hover hover:-translate-y-0.5"
+              className="panel-tick group flex items-center gap-3 rounded-lg border border-accent/20 bg-surface-raised p-4 shadow-card transition-all duration-300 hover:border-accent/40 hover:shadow-card-hover hover:-translate-y-0.5"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent/10 text-accent transition-transform duration-300 group-hover:scale-110">
+              <span className="grid h-11 w-11 place-items-center rounded-md bg-accent/10 text-accent transition-transform duration-300 group-hover:scale-110">
                 <Phone size={18} />
               </span>
               <span>
-                <span className="block text-xs font-bold uppercase tracking-[0.15em] text-ink-light">
-                  24/7 emergency
+                <span className="block font-mono text-[10px] font-bold uppercase tracking-mono text-accent-dark">
+                  24/7 EMERGENCY
                 </span>
-                <span className="font-display text-lg font-bold text-ink transition-colors duration-200 group-hover:text-accent">{CONTACT.emergencyPhone}</span>
+                <span className="font-display text-lg font-semibold text-ink transition-colors duration-200 group-hover:text-accent">{CONTACT.emergencyPhone}</span>
               </span>
             </a>
             <a
               href={CONTACT.phoneTel}
               onClick={() => { onCall(); trackCall("business"); }}
-              className="group flex items-center gap-3 rounded-2xl border border-brand/10 bg-surface-raised p-4 shadow-card transition-all duration-300 hover:border-brand/25 hover:shadow-card-hover hover:-translate-y-0.5"
+              className="panel-tick group flex items-center gap-3 rounded-lg border border-brand/20 bg-surface-raised p-4 shadow-card transition-all duration-300 hover:border-brand/40 hover:shadow-card-hover hover:-translate-y-0.5"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand transition-transform duration-300 group-hover:scale-110">
+              <span className="grid h-11 w-11 place-items-center rounded-md bg-brand/10 text-brand transition-transform duration-300 group-hover:scale-110">
                 <Phone size={18} />
               </span>
               <span>
-                <span className="block text-xs font-bold uppercase tracking-[0.15em] text-ink-light">
-                  Business hours
+                <span className="block font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light">
+                  BUSINESS HOURS
                 </span>
-                <span className="font-display text-lg font-bold text-ink transition-colors duration-200 group-hover:text-brand">{CONTACT.phone}</span>
+                <span className="font-display text-lg font-semibold text-ink transition-colors duration-200 group-hover:text-brand">{CONTACT.phone}</span>
               </span>
             </a>
           </div>
 
-          <p className="mt-6 text-sm text-ink-light">
-            {CONTACT.address} | {CONTACT.hours}
+          <p className="mt-6 font-mono text-[11px] uppercase tracking-wider text-ink-light">
+            {CONTACT.address} / {CONTACT.hours}
           </p>
 
-          <div className="mt-10 rounded-2xl border border-border bg-surface-raised p-6 shadow-card transition-all duration-300 hover:shadow-card-hover">
+          <div className="mt-10 rounded-lg border border-border bg-surface-raised p-6 shadow-card transition-all duration-300 hover:shadow-card-hover">
             <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">
+              <span className="grid h-11 w-11 place-items-center rounded-md bg-brand/10 text-brand">
                 <ClipboardCheck size={22} />
               </span>
               <div>
@@ -499,7 +494,7 @@ export default function Contact({ onCall }: Props) {
               ].map(({ icon: Icon, text }) => (
                 <div
                   key={text}
-                  className="group/tip flex gap-3 rounded-2xl border border-border bg-surface-alt p-4 transition-all duration-200 hover:border-brand/20 hover:bg-brand/[0.02]"
+                  className="group/tip flex gap-3 rounded-md border border-border bg-surface-alt p-4 transition-all duration-200 hover:border-brand/20 hover:bg-brand/[0.02]"
                 >
                   <Icon className="mt-0.5 shrink-0 text-brand transition-transform duration-200 group-hover/tip:scale-110" size={18} />
                   <span>{text}</span>
@@ -585,11 +580,11 @@ export default function Contact({ onCall }: Props) {
               )}
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor="message">How can we help?</label>
+                <label className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light" htmlFor="message">How can we help?</label>
                 <textarea
                   id="message"
                   rows={4}
-                  className="w-full rounded-xl border border-border bg-surface-raised px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 resize-none hover:border-brand/30"
+                  className="w-full rounded-md border border-border bg-surface-raised px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 resize-none hover:border-brand/30"
                   placeholder="Describe the fault or what you need..."
                   value={form.message}
                   onChange={(e) => update("message", e.target.value)}
@@ -598,9 +593,9 @@ export default function Contact({ onCall }: Props) {
 
               {/* Photo upload with drag-and-drop */}
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-ink">Photo (optional)</label>
+                <label className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-mono text-ink-light">Photo (optional)</label>
                 <div
-                  className={`drop-zone rounded-2xl p-3 transition-all duration-300 ${dragOver ? "drag-over" : ""}`}
+                  className={`drop-zone rounded-lg p-3 transition-all duration-300 ${dragOver ? "drag-over" : ""}`}
                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
@@ -609,9 +604,9 @@ export default function Contact({ onCall }: Props) {
                     <button
                       type="button"
                       onClick={() => fileRef.current?.click()}
-                      className="group flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-surface-raised px-4 py-3 text-left transition-all duration-200 hover:shadow-sm"
+                      className="group flex min-w-0 flex-1 items-center gap-3 rounded-md bg-surface-raised px-4 py-3 text-left transition-all duration-200 hover:shadow-sm"
                     >
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand transition-transform duration-200 group-hover:scale-110">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-brand/10 text-brand transition-transform duration-200 group-hover:scale-110">
                         {fileName ? <FileImage size={18} /> : <Upload size={18} />}
                       </span>
                       <span className="min-w-0">
@@ -627,7 +622,7 @@ export default function Contact({ onCall }: Props) {
                       <button
                         type="button"
                         onClick={removeFile}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-accent/30 px-4 py-3 text-sm font-semibold text-accent transition-all duration-200 hover:bg-accent/10 hover:shadow-sm"
+                        className="inline-flex items-center justify-center gap-2 rounded-md border border-accent/30 px-4 py-3 text-sm font-semibold text-accent transition-all duration-200 hover:bg-accent/10 hover:shadow-sm"
                       >
                         <X size={16} /> Remove
                       </button>
@@ -650,11 +645,11 @@ export default function Contact({ onCall }: Props) {
 
               {/* Turnstile */}
               {HAS_TURNSTILE ? (
-                <div className="rounded-xl border border-border bg-surface-alt p-2 transition-colors hover:border-brand/20">
+                <div className="rounded-md border border-border bg-surface-alt p-2 transition-colors hover:border-brand/20">
                   <div ref={turnstileRef} className="cf-turnstile min-h-[65px]" />
                 </div>
               ) : (
-                <p className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent">
+                <p className="rounded-md border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent">
                   Add your Cloudflare Turnstile site key in .env.local before live submissions.
                 </p>
               )}
@@ -675,7 +670,7 @@ export default function Contact({ onCall }: Props) {
               </button>
 
               {status === "error" ? (
-                <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-sm text-accent">
+                <div className="flex items-start gap-2 rounded-md border border-accent/20 bg-accent/5 p-3 text-sm text-accent">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <span>{submitError || "Something went wrong."} Please call {CONTACT.emergencyPhone} if urgent.</span>
                 </div>

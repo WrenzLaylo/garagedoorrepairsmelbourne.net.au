@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .env
+
+# Server secret — Turnstile secret + form delivery config (never commit)
+quote-form-config.php

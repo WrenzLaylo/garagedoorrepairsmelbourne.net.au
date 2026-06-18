@@ -4,6 +4,7 @@ import {
   Loader2, CheckCircle2, Upload, FileImage,
 } from "lucide-react";
 import { CONTACT, BUSINESS } from "../../constants";
+import { getTurnstileResponse, loadTurnstile } from "../../utils/turnstile";
 
 /* ─── env / constants ─────────────────────────────────────── */
 const ENDPOINT = import.meta.env.VITE_QUOTE_FORM_ENDPOINT || "/quote-submit.php";
@@ -46,8 +47,8 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 const EMPTY: FormValues = {
   name: "", email: "", phone: "", suburb: "",
-  propertyType: "", serviceType: "", serviceFor: "Garage Door",
-  garageDoorType: "", gateType: "", message: "", company: "",
+  propertyType: "Residential", serviceType: "Garage door repair", serviceFor: "Garage Door",
+  garageDoorType: "Roller door", gateType: "Swing gate", message: "", company: "",
 };
 
 function validate(f: FormValues): Errors {
@@ -74,7 +75,7 @@ function Field({ id, label, value, onChange, error, type = "text", placeholder }
         id={id} type={type} value={value} placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
         aria-invalid={Boolean(error)}
-        className={`w-full rounded-xl border bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-light transition-all focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand ${
+        className={`w-full rounded-md border bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-light transition-all focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand ${
           error ? "border-accent" : "border-border hover:border-brand/30"
         }`}
       />
@@ -102,7 +103,7 @@ function FloatDropdown({ label, value, options, onChange, error }: {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className={`flex w-full items-center justify-between rounded-xl border bg-surface px-3 py-2.5 text-left text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand/15 ${
+        className={`flex w-full items-center justify-between rounded-md border bg-surface px-3 py-2.5 text-left text-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand/15 ${
           error ? "border-accent" : "border-border hover:border-brand/30"
         }`}
       >
@@ -110,7 +111,7 @@ function FloatDropdown({ label, value, options, onChange, error }: {
         <ChevronDown size={15} className={`text-ink-light transition-transform ${open ? "rotate-180 text-brand" : ""}`} />
       </button>
       {open && (
-        <ul className="absolute z-[60] mt-1 max-h-44 w-full overflow-auto rounded-xl border border-border bg-surface-raised py-1 shadow-xl">
+        <ul className="absolute z-[60] mt-1 max-h-44 w-full overflow-auto rounded-md border border-border bg-surface-raised py-1 shadow-xl">
           {options.map(opt => (
             <li
               key={opt}
@@ -140,7 +141,7 @@ function FloatChips({ label, value, options, onChange }: {
         {options.map(opt => (
           <button
             key={opt} type="button" onClick={() => onChange(opt)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+            className={`rounded-md border px-3 py-1 text-xs font-medium transition-all ${
               value === opt
                 ? "border-brand bg-brand/10 text-brand"
                 : "border-border bg-surface text-ink-soft hover:border-brand/40 hover:text-brand"
@@ -196,25 +197,22 @@ export default function FloatingQuoteButton() {
   /* turnstile */
   useEffect(() => {
     if (!HAS_TURNSTILE || !open) return;
-    if (!document.querySelector("script[data-turnstile]")) {
-      const s = document.createElement("script");
-      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      s.async = true; s.defer = true;
-      s.setAttribute("data-turnstile", "true");
-      document.head.appendChild(s);
-    }
-    const iv = window.setInterval(() => {
-      if (window.turnstile && turnstileRef.current && widgetId.current === null) {
+
+    let cancelled = false;
+    loadTurnstile()
+      .then(() => {
+        if (cancelled || !window.turnstile || !turnstileRef.current || widgetId.current !== null) return;
         widgetId.current = window.turnstile.render(turnstileRef.current, {
-          sitekey: TURNSTILE_KEY, theme: "light",
+          sitekey: TURNSTILE_KEY,
+          theme: "light",
           callback: () => setSubmitError(""),
           "expired-callback": () => setSubmitError("Please complete the spam check again."),
           "error-callback": () => setSubmitError("Spam protection failed. Refresh and try again."),
         });
-        window.clearInterval(iv);
-      }
-    }, 300);
-    return () => window.clearInterval(iv);
+      })
+      .catch(() => setSubmitError("Spam protection failed. Refresh and try again."));
+
+    return () => { cancelled = true; };
   }, [open]);
 
   const update = (key: keyof FormValues, val: string) => {
@@ -251,7 +249,7 @@ export default function FloatingQuoteButton() {
       setSubmitError("Turnstile not configured. Add your site key to .env.local.");
       return;
     }
-    const token = (document.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement | null)?.value;
+    const token = getTurnstileResponse(widgetId.current, turnstileRef.current);
     if (!token) { setStatus("error"); setSubmitError("Please complete the spam check."); return; }
 
     setStatus("submitting");
@@ -300,7 +298,7 @@ export default function FloatingQuoteButton() {
       {/* ── Expanded panel ── */}
       <div
         ref={panelRef}
-        className={`absolute bottom-16 right-0 w-[22rem] overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-2xl transition-all duration-300 origin-bottom-right ${
+        className={`absolute bottom-16 right-0 w-[22rem] overflow-hidden rounded-lg border border-border bg-surface-raised shadow-2xl transition-all duration-300 origin-bottom-right ${
           open ? "scale-100 opacity-100 pointer-events-auto" : "scale-90 opacity-0 pointer-events-none"
         }`}
         style={{ boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}
@@ -308,8 +306,8 @@ export default function FloatingQuoteButton() {
         {/* Header */}
         <div className="flex items-center justify-between bg-brand px-5 py-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-label text-ink-inverse/70">Free Quote</p>
-            <p className="font-display text-lg font-bold text-ink-inverse leading-tight mt-0.5">Request a quote</p>
+            <p className="font-mono text-[10px] font-bold uppercase tracking-mono text-ink-inverse/70">[ FREE QUOTE ]</p>
+            <p className="font-display text-lg font-semibold text-ink-inverse leading-tight mt-0.5">Request a quote</p>
           </div>
           <button
             type="button" onClick={handleClose}
@@ -372,7 +370,7 @@ export default function FloatingQuoteButton() {
                   id="f-message" rows={3} value={form.message}
                   onChange={e => update("message", e.target.value)}
                   placeholder="Describe the fault or what you need…"
-                  className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-light transition-all focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 hover:border-brand/30"
+                  className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-light transition-all focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 hover:border-brand/30"
                 />
               </div>
 
@@ -382,7 +380,7 @@ export default function FloatingQuoteButton() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="group flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5 text-left transition-all hover:border-brand/30 hover:shadow-sm"
+                  className="group flex w-full items-center gap-3 rounded-md border border-border bg-surface px-3 py-2.5 text-left transition-all hover:border-brand/30 hover:shadow-sm"
                 >
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand transition-transform group-hover:scale-110">
                     {fileName ? <FileImage size={15} /> : <Upload size={15} />}
@@ -411,17 +409,17 @@ export default function FloatingQuoteButton() {
 
               {/* Turnstile */}
               {HAS_TURNSTILE ? (
-                <div className="rounded-xl border border-border bg-surface-alt p-2">
+                <div className="rounded-md border border-border bg-surface-alt p-2">
                   <div ref={turnstileRef} className="cf-turnstile min-h-[65px]" />
                 </div>
               ) : (
-                <p className="rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-xs text-accent">
+                <p className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-xs text-accent">
                   Add your Cloudflare Turnstile site key in .env.local before live submissions.
                 </p>
               )}
 
               {status === "error" && (
-                <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-accent">
+                <div className="flex items-start gap-2 rounded-md border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-accent">
                   <AlertCircle size={13} className="mt-0.5 shrink-0" />
                   <span>{submitError} {submitError?.includes("urgent") ? "" : `Call ${CONTACT.emergencyPhone} if urgent.`}</span>
                 </div>
@@ -430,7 +428,7 @@ export default function FloatingQuoteButton() {
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-dark py-3 text-sm font-semibold text-white transition-all hover:bg-brand disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-brand-dark py-3 text-sm font-semibold text-white transition-all hover:bg-brand disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {status === "submitting"
                   ? <><Loader2 size={15} className="animate-spin" /> Sending…</>

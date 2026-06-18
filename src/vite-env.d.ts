@@ -17,6 +17,7 @@ interface TurnstileApi {
     }
   ) => string;
   reset: (widgetId?: string | null) => void;
+  getResponse?: (widgetId?: string | null) => string;
 }
 
 interface Window {

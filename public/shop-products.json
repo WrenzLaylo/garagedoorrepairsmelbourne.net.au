@@ -1,0 +1,14 @@
+{
+  "synced_at": "seed",
+  "products": [
+    { "ref": "RC-E970M", "title": "Merlin E970M +2.0 Remote", "price": "$79.00", "category": "Remotes", "fits": "Merlin Security+ 2.0", "image": "/assets/shop/remote-merlin-e970m.jpg", "href": "https://shop.aggdoors.com.au/products/merlin-e970m-2-remotes", "available": true },
+    { "ref": "KP-SEC20", "title": "Merlin Wireless Security Keypad", "price": "$137.00", "category": "Keypads", "fits": "Security+ 2.0 openers", "image": "/assets/shop/keypad-merlin-security.png", "href": "https://shop.aggdoors.com.au/products/merlin-wireless-security-keypad-security-2-0", "available": true },
+    { "ref": "WB-WTX6", "title": "ATA WTX-6 Wireless Wall Button", "price": "$85.00", "category": "Wall controls", "fits": "ATA TrioCode systems", "image": "/assets/shop/wallbutton-ata-wtx6.jpg", "href": "https://shop.aggdoors.com.au/products/ata-wtx-6-triocode-premium-wireless-wall-button", "available": true },
+    { "ref": "MT-MS105", "title": "Merlin Commander Elite MS105MYQ", "price": "$539.95", "category": "Openers", "fits": "Sectional / panel-lift", "image": "/assets/shop/opener-merlin-ms105.png", "href": "https://shop.aggdoors.com.au/products/merlin-commander-elite-ms105myq", "available": true },
+    { "ref": "MT-R1000", "title": "LiftPro R1000 Roller Door Opener", "price": "$430.00", "category": "Openers", "fits": "Roller doors", "image": "/assets/shop/opener-liftpro-r1000.jpg", "href": "https://shop.aggdoors.com.au/products/liftpro-r1000-roller-door-opener", "available": true },
+    { "ref": "RX-E8003", "title": "Merlin E8003 Receiver", "price": "$137.00", "category": "Receivers", "fits": "Merlin openers", "image": "/assets/shop/receiver-merlin-e8003.jpg", "href": "https://shop.aggdoors.com.au/products/merlin-e8003-receiver", "available": true },
+    { "ref": "SP-J90", "title": "Tilt Door J70 / J90 Jamb Spring", "price": "$110.00", "category": "Springs", "fits": "J-series tilt doors", "image": "/assets/shop/spring-tilt-jamb.jpg", "href": "https://shop.aggdoors.com.au/products/tilt-door-j70-j90-jamb-type-spring", "available": true },
+    { "ref": "RL-W220", "title": "B&D Sectional Door Wheel 220mm", "price": "$29.00", "category": "Rollers", "fits": "B&D Panelift", "image": "/assets/shop/roller-bd-wheel-220.jpg", "href": "https://shop.aggdoors.com.au/products/b-d-sectional-panel-door-wheel-220mm", "available": true },
+    { "ref": "WS-S23", "title": "B&D Series 2 & 3 Weatherstrip", "price": "$27.00", "category": "Weather seals", "fits": "B&D Series 2 / 3", "image": "/assets/shop/seal-bd-weatherstrip.jpg", "href": "https://shop.aggdoors.com.au/products/b-d-series-2-3-weatherstrip-universal-series-2-3", "available": true }
+  ]
+}

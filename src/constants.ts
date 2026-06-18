@@ -16,7 +16,7 @@ export const BUSINESS = {
   parentBrandUrl: "https://www.aggdoors.com.au/",
   founded: 1999,
   domain: "https://garagedoorrepairsmelbourne.net.au",
-  logo: "/favicon-mark.svg",
+  logo: "/assets/gdrm-header-footer-logo.png",
   logoLockup: "/site-logo.svg",
 } as const;
 
@@ -195,6 +195,104 @@ export const PARTS: PartItem[] = [
   { name: "Weather Seals", desc: "Bottom seals, brush seals and perimeter weather strips.", icon: "ShieldCheck" },
 ];
 
+export interface ShopProduct {
+  ref: string; // mono "part code" shown on the card
+  title: string;
+  price: string; // "$79.00" or "" when unavailable
+  category: string;
+  fits: string; // short compatibility line
+  image: string; // local path under /public
+  href: string; // deep link to the live shop product
+  available?: boolean; // false → out of stock (price hidden); undefined treated as available
+}
+
+// Real, in-stock products pulled from shop.aggdoors.com.au (curated across categories).
+// Images downloaded locally to /public/assets/shop for performance.
+const SHOP = "https://shop.aggdoors.com.au/products/";
+export const SHOP_PRODUCTS: ShopProduct[] = [
+  {
+    ref: "RC-E970M",
+    title: "Merlin E970M +2.0 Remote",
+    price: "$79.00",
+    category: "Remotes",
+    fits: "Merlin Security+ 2.0",
+    image: "/assets/shop/remote-merlin-e970m.jpg",
+    href: `${SHOP}merlin-e970m-2-remotes`,
+  },
+  {
+    ref: "KP-SEC20",
+    title: "Merlin Wireless Security Keypad",
+    price: "$137.00",
+    category: "Keypads",
+    fits: "Security+ 2.0 openers",
+    image: "/assets/shop/keypad-merlin-security.png",
+    href: `${SHOP}merlin-wireless-security-keypad-security-2-0`,
+  },
+  {
+    ref: "WB-WTX6",
+    title: "ATA WTX-6 Wireless Wall Button",
+    price: "$85.00",
+    category: "Wall controls",
+    fits: "ATA TrioCode systems",
+    image: "/assets/shop/wallbutton-ata-wtx6.jpg",
+    href: `${SHOP}ata-wtx-6-triocode-premium-wireless-wall-button`,
+  },
+  {
+    ref: "MT-MS105",
+    title: "Merlin Commander Elite MS105MYQ",
+    price: "$539.95",
+    category: "Openers",
+    fits: "Sectional / panel-lift",
+    image: "/assets/shop/opener-merlin-ms105.png",
+    href: `${SHOP}merlin-commander-elite-ms105myq`,
+  },
+  {
+    ref: "MT-R1000",
+    title: "LiftPro R1000 Roller Door Opener",
+    price: "$430.00",
+    category: "Openers",
+    fits: "Roller doors",
+    image: "/assets/shop/opener-liftpro-r1000.jpg",
+    href: `${SHOP}liftpro-r1000-roller-door-opener`,
+  },
+  {
+    ref: "RX-E8003",
+    title: "Merlin E8003 Receiver",
+    price: "$137.00",
+    category: "Receivers",
+    fits: "Merlin openers",
+    image: "/assets/shop/receiver-merlin-e8003.jpg",
+    href: `${SHOP}merlin-e8003-receiver`,
+  },
+  {
+    ref: "SP-J90",
+    title: "Tilt Door J70 / J90 Jamb Spring",
+    price: "$110.00",
+    category: "Springs",
+    fits: "J-series tilt doors",
+    image: "/assets/shop/spring-tilt-jamb.jpg",
+    href: `${SHOP}tilt-door-j70-j90-jamb-type-spring`,
+  },
+  {
+    ref: "RL-W220",
+    title: "B&D Sectional Door Wheel 220mm",
+    price: "$29.00",
+    category: "Rollers",
+    fits: "B&D Panelift",
+    image: "/assets/shop/roller-bd-wheel-220.jpg",
+    href: `${SHOP}b-d-sectional-panel-door-wheel-220mm`,
+  },
+  {
+    ref: "WS-S23",
+    title: "B&D Series 2 & 3 Weatherstrip",
+    price: "$27.00",
+    category: "Weather seals",
+    fits: "B&D Series 2 / 3",
+    image: "/assets/shop/seal-bd-weatherstrip.jpg",
+    href: `${SHOP}b-d-series-2-3-weatherstrip-universal-series-2-3`,
+  },
+];
+
 export interface TestimonialItem {
   name: string;
   suburb: string;
@@ -303,33 +401,42 @@ export const TESTIMONIALS: TestimonialItem[] = [
   },
 ] as const;
 
+export type FaqTag = "Pricing" | "Timing" | "Emergency" | "Safety" | "Brands" | "Warranty";
+
 export interface FaqItem {
   q: string;
   a: string;
+  tag: FaqTag;
 }
 
 export const FAQS: FaqItem[] = [
   {
+    tag: "Pricing",
     q: "How much does a garage door repair cost in Melbourne?",
     a: "Simple repairs like remote replacement or minor adjustments typically start from around $120. Larger work such as spring or motor replacement is quoted after a quick inspection. You always get an upfront, fixed quote before any work begins — no surprises.",
   },
   {
+    tag: "Timing",
     q: "How fast can you repair my garage door?",
     a: "Most standard repairs are completed in 1–2 hours once the technician has inspected the door and confirmed parts are available. We carry common springs, cables, rollers and remotes on the van, and offer same-day windows across Melbourne where scheduling allows.",
   },
   {
+    tag: "Emergency",
     q: "Do you offer emergency garage door repairs?",
     a: "Yes. We run 24/7 emergency call-outs across Melbourne. If your door is stuck open, off track, or poses a safety risk, call us immediately on 03 8789 3254 and we'll dispatch the fastest available technician. Please don't force the door in the meantime.",
   },
   {
+    tag: "Safety",
     q: "My spring snapped — is it safe to use the door?",
     a: "No. A broken torsion or extension spring puts the full weight of the door on the opener and cables, which can fail suddenly. Don't operate the door or force the opener. Call us and we'll replace and re-tension the springs safely.",
   },
   {
+    tag: "Brands",
     q: "What garage door brands and types do you repair?",
     a: "We're brand-agnostic and repair all major brands including B&D, Dominator, Merlin, Gliderol, Centurion and more — across sectional/panel-lift, roller and tilt doors. Brand support depends on part availability and system age.",
   },
   {
+    tag: "Warranty",
     q: "Do you provide a warranty on repairs?",
     a: "Yes. All repairs are backed by a workmanship warranty, and parts carry manufacturer warranties where applicable. We provide a clear service report after every job, kept on file with AGG Doors for future reference.",
   },

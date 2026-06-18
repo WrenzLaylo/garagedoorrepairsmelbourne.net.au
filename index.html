@@ -16,7 +16,7 @@
 
     <!-- Icons -->
     <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="/favicon-mark.svg" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -49,24 +49,22 @@
     <meta name="geo.position" content="-37.8136;144.9631" />
     <meta name="ICBM" content="-37.8136, 144.9631" />
 
-    <!-- Fonts -->
+    <!-- Fonts — engineered system: Space Grotesk (display) · Inter Tight (body) · Space Mono (technical labels) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Google Analytics 4 — TODO: replace G-XXXXXXXXXX with the real Measurement ID,
-         then uncomment the config line + the gtag.js script tag below. The stub keeps
-         analytics.ts working (events queue into dataLayer) until then. -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3ZHD4M9EZ0"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      // gtag('config', 'G-XXXXXXXXXX');
+      gtag('config', 'G-3ZHD4M9EZ0');
     </script>
-    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -192,6 +190,5 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Cloudflare Turnstile -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   </body>
 </html>

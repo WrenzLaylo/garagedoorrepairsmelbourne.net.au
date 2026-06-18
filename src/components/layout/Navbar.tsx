@@ -67,10 +67,12 @@ export default function Navbar({ onCall }: Props) {
         aria-label="Page scroll progress"
       />
 
-      {/* Scroll-reactive header: tall + transparent at top → condensed white bar with hairline */}
+      {/* Scroll-reactive header: fully opaque light surface at the top (so a stale
+          cache or backdrop-filter quirk can never make it read as "gone"), condensing
+          to the glass bar on scroll. Always z-50. */}
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-smooth-out ${
-          scrolled ? "glass border-b border-border shadow-card" : "border-b border-transparent bg-transparent"
+          scrolled ? "glass border-b border-border shadow-card" : "border-b border-border bg-surface"
         }`}
       >
         <div className={`container-x flex items-center justify-between transition-all duration-500 ease-smooth-out ${scrolled ? "h-16" : "h-20 md:h-24"}`}>
@@ -107,18 +109,18 @@ export default function Navbar({ onCall }: Props) {
             ))}
           </nav>
 
-          {/* Desktop CTAs */}
+          {/* Desktop CTAs — phone-first */}
           <div className="hidden items-center gap-3 lg:flex">
+            <a href="#contact" className="btn-ghost text-sm" aria-label="Get a free quote">Free quote</a>
             <a
               href={CONTACT.phoneTel}
               onClick={onCall}
-              className="flex items-center gap-2 rounded-full border border-border-strong px-4 py-2 text-sm font-semibold text-ink transition-all duration-300 hover:border-brand hover:text-brand-deep"
-              aria-label="Call us"
+              className="btn-call text-sm"
+              aria-label={`Call ${CONTACT.phone}`}
             >
               <Phone className="h-4 w-4" aria-hidden="true" />
               {CONTACT.phone}
             </a>
-            <a href="#contact" className="btn-primary text-sm" aria-label="Get a quote">Get a quote</a>
           </div>
 
           {/* Mobile hamburger */}
@@ -178,7 +180,7 @@ export default function Navbar({ onCall }: Props) {
             <a
               key={link.href}
               href={link.href}
-              className="group flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-ink-soft transition-all duration-300 hover:bg-surface-alt hover:text-ink"
+              className="group flex items-center gap-3 rounded-md px-4 py-3 font-mono text-sm font-bold uppercase tracking-wider text-ink-soft transition-all duration-300 hover:bg-surface-alt hover:text-ink"
               style={{
                 transitionDelay: open ? `${80 + i * 50}ms` : "0ms",
                 opacity: open ? 1 : 0,
@@ -186,7 +188,7 @@ export default function Navbar({ onCall }: Props) {
               }}
               onClick={closeMenu}
             >
-              <span className="h-1 w-1 rounded-full bg-brand/60 transition-all duration-300 group-hover:w-2 group-hover:bg-brand" />
+              <span className="h-1.5 w-1.5 bg-brand/60 transition-all duration-300 group-hover:w-3 group-hover:bg-brand" />
               {link.label}
             </a>
           ))}
@@ -197,12 +199,12 @@ export default function Navbar({ onCall }: Props) {
             <a
               href={CONTACT.phoneTel}
               onClick={() => { onCall(); closeMenu(); }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border-strong px-4 py-3 text-sm font-semibold text-ink transition-all duration-300 hover:border-brand hover:text-brand-deep"
+              className="btn-call w-full text-sm"
             >
               <Phone className="h-4 w-4" />
-              {CONTACT.phone}
+              Call {CONTACT.phone}
             </a>
-            <a href="#contact" className="btn-primary w-full text-sm" onClick={closeMenu}>Get a quote</a>
+            <a href="#contact" className="btn-ghost w-full text-sm" onClick={closeMenu}>Get a free quote</a>
           </div>
         </div>
       </div>

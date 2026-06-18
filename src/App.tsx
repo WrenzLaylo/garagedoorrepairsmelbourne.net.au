@@ -46,18 +46,18 @@ export default function App() {
         }}
       />
       <main>
-        <Hero 
+        <Hero
           onCall={() => { trackCall(); }}
           onEmergencyCall={() => { trackEmergencyCall(); }}
         />
         <TrustBadges />
         <StatsBar />
         <Services />
-        <BackedByAgg />
-        <HowItWorks />
-        <ServiceAreas />
-        <Parts />
         <Testimonials />
+        <HowItWorks />
+        <Parts />
+        <ServiceAreas />
+        <BackedByAgg />
         <FAQ />
         <Contact
           onCall={trackCall}

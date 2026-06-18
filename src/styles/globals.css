@@ -2,10 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   GARAGE DOOR REPAIRS MELBOURNE — "Engineered / Technical" design system
+   Space Grotesk (display) · Inter Tight (body) · Space Mono (technical labels)
+   Palette unchanged: cobalt brand · red accent · gold · white surfaces.
+   ========================================================================== */
+
 @layer base {
   html {
     scroll-padding-top: 6rem;
-    background: #FFFFFF;
+    background: #ffffff;
   }
   /* Lenis drives scrolling; native smooth would fight it. Disabled when reduced-motion. */
   html.lenis,
@@ -24,15 +30,18 @@
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     @apply font-display text-ink;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.02em;
-    line-height: 1.05;
+    line-height: 1.04;
   }
 
   ::selection {
-    background: rgba(45, 91, 255, 0.16);
+    background: rgba(45, 91, 255, 0.18);
     color: #111111;
   }
 
@@ -40,10 +49,20 @@
     @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-surface;
   }
 
-  ::-webkit-scrollbar { width: 10px; }
-  ::-webkit-scrollbar-track { background: #FFFFFF; }
-  ::-webkit-scrollbar-thumb { background: #D3D7DD; border-radius: 999px; border: 2px solid #FFFFFF; }
-  ::-webkit-scrollbar-thumb:hover { background: #2D5BFF; }
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d3d7dd;
+    border-radius: 0;
+    border: 2px solid #ffffff;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2d5bff;
+  }
 }
 
 @layer components {
@@ -51,18 +70,42 @@
     @apply mx-auto w-full max-w-container px-5 sm:px-6 lg:px-8;
   }
 
-  /* ---------- Editorial labels ---------- */
+  /* ---------- Technical labels (the signature of this system) ---------- */
+  /* Bracketed mono kicker: [ 01 / SERVICES ] */
+  .kicker {
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-mono text-ink-light;
+  }
+  .kicker::before {
+    content: "[";
+    @apply text-brand;
+  }
+  .kicker::after {
+    content: "]";
+    @apply text-brand;
+  }
+  .kicker .num {
+    @apply text-brand-deep;
+  }
+  .kicker .sep {
+    @apply text-border-strong;
+  }
+
+  .label-mono {
+    @apply font-mono text-[11px] font-bold uppercase tracking-mono text-ink-light;
+  }
+
+  /* Back-compat aliases (older markup) re-skinned to the mono system */
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-label text-brand-deep;
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-mono text-brand-deep;
   }
   .index-eyebrow {
-    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-label text-ink-light;
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-mono text-ink-light;
   }
   .index-eyebrow .num {
-    @apply font-semibold text-brand-deep;
+    @apply text-brand-deep;
   }
   .index-num {
-    @apply font-display font-bold text-brand;
+    @apply font-mono font-bold text-brand;
     font-variant-numeric: tabular-nums;
   }
 
@@ -70,33 +113,52 @@
   .rule {
     @apply h-px w-full bg-border;
   }
+  .rule-dashed {
+    height: 1px;
+    width: 100%;
+    background-image: linear-gradient(90deg, #d3d7dd 0 6px, transparent 6px 12px);
+    background-size: 12px 1px;
+  }
 
   /* ---------- Headings ---------- */
   .h-section {
-    @apply font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl lg:text-5xl;
-    line-height: 1.04;
+    @apply font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-[2.85rem];
+    line-height: 1.02;
   }
 
-  /* ---------- Buttons ---------- */
+  /* ---------- Buttons (sharp / engineered) ---------- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-semibold transition-all duration-200;
   }
   .btn-primary {
     @apply btn bg-brand-dark text-white;
+    box-shadow: 0 1px 0 rgba(17, 17, 17, 0.04);
   }
   .btn-primary:hover {
     @apply shadow-btn-brand;
-    background: #2D5BFF;
+    background: #2d5bff;
     transform: translateY(-1px);
   }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* Phone-first call button: cobalt, confident, mono-tracked */
+  .btn-call {
+    @apply btn rounded-md bg-ink px-7 text-white;
+  }
+  .btn-call:hover {
+    background: #2d5bff;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px -10px rgba(45, 91, 255, 0.55);
+  }
 
   .btn-accent {
     @apply btn bg-accent text-white;
   }
   .btn-accent:hover {
     @apply shadow-btn-accent;
-    background: #F26A6E;
+    background: #f26a6e;
     transform: translateY(-1px);
   }
 
@@ -113,9 +175,9 @@
     @apply py-20 md:py-28;
   }
 
-  /* ---------- Cards ---------- */
+  /* ---------- Cards / panels (engineered: square-ish, hairline, corner ticks) ---------- */
   .card {
-    @apply rounded-2xl border border-border bg-surface-raised p-6 shadow-card;
+    @apply rounded-lg border border-border bg-surface-raised p-6 shadow-card;
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .card-interactive {
@@ -124,7 +186,7 @@
   .card-interactive:hover {
     @apply shadow-card-hover;
     transform: translateY(-3px);
-    border-color: rgba(45, 91, 255, 0.35);
+    border-color: rgba(45, 91, 255, 0.4);
   }
   .card-tilt {
     transform-style: preserve-3d;
@@ -132,9 +194,65 @@
     transition: transform 0.1s ease-out;
   }
 
+  /* Engineered panel with machined corner ticks */
+  .panel {
+    @apply relative rounded-lg border border-border bg-surface-raised;
+  }
+  .panel-tick {
+    position: relative;
+  }
+  .panel-tick::before,
+  .panel-tick::after {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-color: #2d5bff;
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .panel-tick::before {
+    top: 9px;
+    left: 9px;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+  }
+  .panel-tick::after {
+    bottom: 9px;
+    right: 9px;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
+  }
+  .panel-tick:hover::before,
+  .panel-tick:hover::after {
+    opacity: 1;
+  }
+
+  /* Mechanical card (back-compat): top edge lights up on hover */
+  .card-mech {
+    position: relative;
+  }
+  .card-mech::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    border-radius: inherit;
+    background: #2d5bff;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .card-mech:hover::before {
+    opacity: 1;
+  }
+
   /* ---------- Nav links ---------- */
   .nav-link {
-    @apply text-sm font-medium text-ink-soft;
+    @apply font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-ink-soft;
     position: relative;
     padding-bottom: 2px;
     transition: color 0.25s ease;
@@ -146,16 +264,19 @@
     bottom: -2px;
     width: 0;
     height: 2px;
-    background: #2D5BFF;
-    border-radius: 1px;
+    background: #2d5bff;
     transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .nav-link:hover { @apply text-ink; }
-  .nav-link:hover::after { width: 100%; }
+  .nav-link:hover {
+    @apply text-ink;
+  }
+  .nav-link:hover::after {
+    width: 100%;
+  }
 
   /* ---------- Text gradient (kept for API compatibility) ---------- */
   .text-gradient-brand {
-    background: linear-gradient(135deg, #2D5BFF, #5C82FF);
+    background: linear-gradient(135deg, #2d5bff, #5c82ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -163,10 +284,95 @@
 
   /* ---------- Glass ---------- */
   .glass {
-    background: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
   }
+}
+
+/* ============================================================================
+   BLUEPRINT GRID + ATMOSPHERE
+   ========================================================================== */
+/* Faint engineering grid usable on any section background. */
+.grid-bp {
+  background-image:
+    linear-gradient(rgba(45, 91, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 91, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+.grid-bp-strong {
+  background-image:
+    linear-gradient(rgba(17, 17, 17, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ===== HERO — engineered blueprint backdrop ===== */
+.hero-eng {
+  background:
+    radial-gradient(60% 60% at 80% 12%, rgba(45, 91, 255, 0.08), transparent 62%),
+    radial-gradient(48% 56% at 70% 84%, rgba(151, 163, 178, 0.12), transparent 64%),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+}
+.hero-eng-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(45, 91, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 91, 255, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(70% 60% at 70% 32%, #000 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(70% 60% at 70% 32%, #000 0%, transparent 80%);
+}
+/* Schematic crosshair ticks scattered on the hero grid */
+.hero-cross {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+}
+.hero-cross::before,
+.hero-cross::after {
+  content: "";
+  position: absolute;
+  background: rgba(45, 91, 255, 0.55);
+}
+.hero-cross::before {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+.hero-cross::after {
+  top: 50%;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  transform: translateY(-50%);
+}
+/* Slow drifting dimension circle (engineering schematic feel) */
+.hero-schematic-ring {
+  position: absolute;
+  border: 1px dashed rgba(45, 91, 255, 0.3);
+  border-radius: 999px;
+  animation: hero-ring-spin 60s linear infinite;
+}
+@keyframes hero-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== TICKER (mono marquee) ===== */
+.ticker-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
 }
 
 /* ===== SCROLL REVEAL (GSAP-driven, no-FOUC) ===== */
@@ -179,7 +385,6 @@ html.fx-ready [data-fx="reveal"] {
   }
 }
 
-/* Line-reveal masks (cinematic heading reveals) */
 .split-line {
   display: block;
   overflow: hidden;
@@ -189,26 +394,11 @@ html.fx-ready [data-fx="reveal"] {
   will-change: transform;
 }
 
-/* Image reveal frames (clip wipe handled in JS, but keep a safe base) */
 [data-reveal-img] {
   overflow: hidden;
 }
 
-/* ===== GARAGE-DOOR HERO REVEAL ===== */
-/* Decorative sectional door overlay — depth via top-light + inner/cast shadows. */
-.door-panel {
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -9px 16px rgba(0, 0, 0, 0.20),
-    0 5px 12px rgba(0, 0, 0, 0.18);
-  will-change: transform;
-}
-/* Reduced-motion / no-JS-friendly: the door never blocks the (always-visible) hero. */
-@media (prefers-reduced-motion: reduce) {
-  [data-door] { display: none !important; }
-}
-
-/* Continuing slat/track motif: faint horizontal panel lines (used on the CTA band). */
+/* Continuing slat/track motif: faint horizontal panel lines (used on dark CTA band). */
 .panel-lines {
   background-image: repeating-linear-gradient(
     to bottom,
@@ -219,11 +409,69 @@ html.fx-ready [data-fx="reveal"] {
   );
 }
 
+/* ===== HOW-IT-WORKS rail + roller (garage-door track motif) ===== */
+.rail-line {
+  background: linear-gradient(90deg, #e3e7ec, #c5cdd5);
+}
+.rail-fill {
+  background: linear-gradient(90deg, #5c82ff, #2d5bff);
+}
+.rail-node {
+  background: #d8dde3;
+  box-shadow:
+    inset 0 0 0 2px #ffffff,
+    0 0 0 1px rgba(95, 105, 117, 0.25);
+}
+.rail-roller {
+  background: radial-gradient(circle at 38% 34%, #ffffff, #c4ccd4 46%, #7f8a96 100%);
+  box-shadow: 0 2px 6px rgba(46, 53, 61, 0.4);
+}
+
+/* ===== FINAL CTA "door opens to bright light" (built by JS, fail-open) ===== */
+.door-open-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+}
+.door-open-valance {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 76px;
+  background: linear-gradient(180deg, #eef1f4, #d6dbe0 55%, #bcc3cb);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -10px 16px rgba(95, 105, 117, 0.22),
+    0 6px 14px rgba(46, 53, 61, 0.18);
+}
+.door-open-valance::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: linear-gradient(180deg, rgba(95, 105, 117, 0) 0%, rgba(95, 105, 117, 0.4) 100%);
+}
+.door-open-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(70% 60% at 50% 18%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 72%);
+}
+
 /* ===== ACCORDION ===== */
 .accordion-content {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease;
   opacity: 0;
 }
 .accordion-content.open {
@@ -233,16 +481,29 @@ html.fx-ready [data-fx="reveal"] {
 .accordion-content > div {
   overflow: hidden;
 }
+.accordion-content > div > div {
+  transform: translateY(-8px);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.accordion-content.open > div > div {
+  transform: translateY(0);
+}
 
 /* ===== TURNSTILE ===== */
-.cf-turnstile { min-height: 65px; border-radius: 10px; overflow: hidden; }
-.cf-turnstile iframe { border-radius: 10px; }
+.cf-turnstile {
+  min-height: 65px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cf-turnstile iframe {
+  border-radius: 8px;
+}
 
 /* ===== FORM FOCUS ===== */
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #2D5BFF !important;
+  border-color: #2d5bff !important;
   outline: none;
   box-shadow: 0 0 0 3px rgba(45, 91, 255, 0.14);
 }
@@ -254,7 +515,9 @@ textarea:focus {
 }
 
 /* ===== PULSE DOT ===== */
-.pulse-dot { position: relative; }
+.pulse-dot {
+  position: relative;
+}
 .pulse-dot::after {
   content: "";
   position: absolute;
@@ -266,12 +529,12 @@ textarea:focus {
 
 /* ===== DROP ZONE ===== */
 .drop-zone {
-  border: 2px dashed #D3D7DD;
+  border: 1.5px dashed #d3d7dd;
   transition: all 0.3s ease;
 }
 .drop-zone:hover,
 .drop-zone.drag-over {
-  border-color: #2D5BFF;
+  border-color: #2d5bff;
   background: rgba(45, 91, 255, 0.04);
 }
 
@@ -281,7 +544,7 @@ textarea:focus {
   top: 0;
   left: 0;
   height: 3px;
-  background: #2D5BFF;
+  background: #2d5bff;
   transform-origin: left;
   z-index: 9999;
   transition: transform 0.1s linear;
@@ -298,34 +561,46 @@ textarea:focus {
 .stagger-children > *:nth-child(3) { animation-delay: 0.19s; }
 .stagger-children > *:nth-child(4) { animation-delay: 0.26s; }
 .stagger-children > *:nth-child(5) { animation-delay: 0.33s; }
-.stagger-children > *:nth-child(6) { animation-delay: 0.40s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.4s; }
 .stagger-children > *:nth-child(7) { animation-delay: 0.47s; }
 .stagger-children > *:nth-child(8) { animation-delay: 0.54s; }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== PERFORMANCE ===== */
-.section {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 600px;
-}
 .animate-float,
-.animate-float-slow { will-change: transform; }
+.animate-float-slow {
+  will-change: transform;
+}
 
-img { image-rendering: -webkit-optimize-contrast; }
+img {
+  image-rendering: -webkit-optimize-contrast;
+}
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
   .animate-float,
   .animate-float-slow,
   .animate-pulse-ring,
   .animate-marquee,
+  .animate-ticker,
+  .hero-schematic-ring,
   .stagger-children > * {
     animation: none !important;
   }
-  * { transition-duration: 0.01ms !important; }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }

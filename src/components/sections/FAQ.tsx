@@ -1,19 +1,9 @@
 import { useState, useMemo, useRef } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
-import { FAQS, CONTACT } from "../../constants";
+import { FAQS, CONTACT, type FaqTag } from "../../constants";
 import ScrollReveal from "../ui/ScrollReveal";
 
-// Category tags — each FAQ mapped by index to one tag
-const FAQ_TAGS = [
-  "Install",
-  "Brands",
-  "Pricing",
-  "Emergency",
-  "Automate",
-  "Warranty",
-] as const;
-
-type FaqTag = typeof FAQ_TAGS[number];
+const FAQ_TAGS = ["Pricing", "Timing", "Emergency", "Safety", "Brands", "Warranty"] as const satisfies readonly FaqTag[];
 
 // Unified, on-brand tag styling. "Emergency" gets the orange accent (it's the
 // one urgency cue we allow); every other tag shares the steel-blue brand chip.
@@ -21,11 +11,11 @@ type TagStyle = { bg: string; text: string; activeBg: string; activeText: string
 const BRAND_TAG: TagStyle = { bg: "bg-brand/[0.10]", text: "text-brand", activeBg: "bg-brand", activeText: "text-ink-inverse", border: "border-brand/25" };
 const ACCENT_TAG: TagStyle = { bg: "bg-accent/[0.07]", text: "text-accent-dark", activeBg: "bg-accent", activeText: "text-white", border: "border-accent/20" };
 const TAG_COLORS: Record<FaqTag, TagStyle> = {
-  "Install":   BRAND_TAG,
-  "Brands":    BRAND_TAG,
   "Pricing":   BRAND_TAG,
+  "Timing":    BRAND_TAG,
   "Emergency": ACCENT_TAG,
-  "Automate":  BRAND_TAG,
+  "Safety":    ACCENT_TAG,
+  "Brands":    BRAND_TAG,
   "Warranty":  BRAND_TAG,
 };
 
@@ -56,7 +46,6 @@ export default function FAQ() {
 
   const faqsWithMeta = FAQS.map((faq, i) => ({
     ...faq,
-    tag: FAQ_TAGS[i] as FaqTag,
     originalIndex: i,
   }));
 
@@ -83,12 +72,14 @@ export default function FAQ() {
     <section id="faq" className="section bg-surface">
       <div className="container-x">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow mb-4">FAQ</span>
-          <h2 className="h-section">Common Questions</h2>
+          <span className="kicker mb-4 justify-center">
+            <span className="num">07</span><span className="sep">/</span>FAQ
+          </span>
+          <h2 className="h-section">Specs &amp; answers.</h2>
           <p className="mt-4 text-base text-ink-soft">
             Everything you need to know before booking. Can&apos;t find your
             answer below?{" "}
-            <a href={CONTACT.phoneTel} className="font-medium text-brand hover:underline">
+            <a href={CONTACT.phoneTel} className="font-semibold text-brand hover:underline">
               Call us directly
             </a>
             .
@@ -112,7 +103,7 @@ export default function FAQ() {
                 setQuery(e.target.value);
                 setOpenIndex(null);
               }}
-              className="w-full rounded-xl border border-border bg-surface-raised py-3 pl-11 pr-10 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 hover:border-brand/30"
+              className="w-full rounded-md border border-border bg-surface-raised py-3 pl-11 pr-10 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 hover:border-brand/30"
               aria-label="Search frequently asked questions"
             />
             {query && (
@@ -138,7 +129,7 @@ export default function FAQ() {
                     setActiveTag(isActive ? null : tag);
                     setOpenIndex(null);
                   }}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-150 hover:-translate-y-0.5 ${
+                  className={`rounded-md border px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider transition-all duration-150 hover:-translate-y-0.5 ${
                     isActive
                       ? `${colors.activeBg} ${colors.activeText} border-transparent shadow-sm`
                       : `${colors.bg} ${colors.text} ${colors.border} hover:opacity-80`
@@ -195,7 +186,7 @@ export default function FAQ() {
                       <div className="flex min-w-0 flex-col gap-1.5">
                         {/* Tag badge */}
                         <span
-                          className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
+                          className={`inline-flex w-fit rounded border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
                         >
                           {faq.tag}
                         </span>
@@ -252,22 +243,16 @@ export default function FAQ() {
         </div>
 
         <ScrollReveal className="mx-auto mt-12 max-w-xl">
-          <div className="group relative overflow-hidden rounded-2xl border border-brand/10 bg-brand/5 p-8 text-center transition-all duration-300 hover:border-brand/25 hover:shadow-card-glow">
-            <div
-              className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-              style={{
-                background: "radial-gradient(circle at 50% 50%, rgba(45, 91, 255, 0.06), transparent 70%)",
-              }}
-              aria-hidden="true"
-            />
+          <div className="panel-tick group relative overflow-hidden rounded-lg border border-border bg-surface-alt p-8 text-center transition-all duration-300 hover:border-brand/30 hover:shadow-card-hover">
             <div className="relative">
-              <p className="font-display text-lg font-semibold text-ink">Still have questions?</p>
+              <span className="font-mono text-[11px] font-bold uppercase tracking-mono text-brand-deep">STILL STUCK?</span>
+              <p className="mt-2 font-display text-lg font-semibold text-ink">Talk to a technician.</p>
               <p className="mt-2 text-sm text-ink-soft">
-                Our technicians are available Mon–Fri 8am–5pm and 24/7 for emergencies.
+                Available Mon–Fri 8am–5pm, and 24/7 for emergencies.
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <a href={CONTACT.phoneTel} className="btn-ghost text-sm">{CONTACT.phone}</a>
-                <a href="#contact" className="btn-primary text-sm">Get a Free Quote</a>
+                <a href={CONTACT.phoneTel} className="btn-call text-sm">Call {CONTACT.phone}</a>
+                <a href="#contact" className="btn-ghost text-sm">Get a free quote</a>
               </div>
             </div>
           </div>

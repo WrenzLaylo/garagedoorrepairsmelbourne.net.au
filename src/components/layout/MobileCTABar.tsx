@@ -33,7 +33,7 @@ export default function MobileCTABar({ onCall, onEmergencyCall }: Props) {
       }}
       aria-hidden={!visible}
     >
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-[1fr_1.3fr_1fr]">
         <a
           href={CONTACT.emergencyTel}
           onClick={onEmergencyCall}
@@ -41,7 +41,7 @@ export default function MobileCTABar({ onCall, onEmergencyCall }: Props) {
           aria-label={`Emergency call ${CONTACT.emergencyPhone}`}
         >
           <AlertTriangle className="h-5 w-5" aria-hidden="true" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider">Emergency</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Emergency</span>
         </a>
         <a
           href={CONTACT.phoneTel}
@@ -50,7 +50,7 @@ export default function MobileCTABar({ onCall, onEmergencyCall }: Props) {
           aria-label={`Call us at ${CONTACT.phone}`}
         >
           <Phone className="h-5 w-5" aria-hidden="true" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider">Call now</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Call now</span>
         </a>
         <a
           href="#contact"
@@ -58,7 +58,7 @@ export default function MobileCTABar({ onCall, onEmergencyCall }: Props) {
           aria-label="Get a free quote"
         >
           <FileText className="h-5 w-5" aria-hidden="true" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider">Get quote</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Get quote</span>
         </a>
       </div>
     </div>

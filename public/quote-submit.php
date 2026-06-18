@@ -8,7 +8,7 @@ const MAX_UPLOAD_BYTES = 8388608;
 const MIN_SECONDS_TO_SUBMIT = 3;
 
 $defaultConfig = [
-    'elementor_endpoint' => 'https://www.aggdoors.com.au/wp-admin/admin-ajax.php',
+    'elementor_endpoint' => 'https://garagedoorquote.net/wp-admin/admin-ajax.php',
     'turnstile_secret' => '',
     'allowed_origins' => [
         'https://garagedoorrepairsmelbourne.net.au',
@@ -20,6 +20,11 @@ $defaultConfig = [
 $configPath = dirname(__DIR__) . '/quote-form-config.php';
 $externalConfig = is_file($configPath) ? require $configPath : [];
 $config = array_replace($defaultConfig, is_array($externalConfig) ? $externalConfig : []);
+
+// Older deploy configs pointed this proxy at the general AGG Doors endpoint, which rejects this form payload.
+if (($config['elementor_endpoint'] ?? '') === 'https://www.aggdoors.com.au/wp-admin/admin-ajax.php') {
+    $config['elementor_endpoint'] = $defaultConfig['elementor_endpoint'];
+}
 
 function respond(int $status, bool $ok, string $message): void
 {
@@ -206,27 +211,73 @@ function forwardToElementor(string $endpoint, ?array $photo): void
         respond(500, false, 'The form service is missing a required server extension.');
     }
 
-    // ── Explicit field allowlist — prevents clients injecting arbitrary keys ──
-    $allowedFormFields = [
-        'name', 'email', 'phone', 'suburb',
-        'property_type', 'service_type', 'service_for', 'door_type', 'message',
-        'source', 'brand',
-    ];
-
-    $payload = [
-        'action'     => 'elementor_pro_forms_send_form',
-        'post_id'    => $_POST['post_id']    ?? '',
-        'form_id'    => $_POST['form_id']    ?? '',
-        'queried_id' => $_POST['queried_id'] ?? '',
-    ];
-
     $formFields = is_array($_POST['form_fields'] ?? null) ? $_POST['form_fields'] : [];
-    foreach ($allowedFormFields as $key) {
-        $payload["form_fields[{$key}]"] = trim((string)($formFields[$key] ?? ''));
-    }
+    $serviceFor = trim((string)($formFields['service_for'] ?? ''));
+    $doorType = trim((string)($formFields['door_type'] ?? ''));
+    $message = trim((string)($formFields['message'] ?? ''));
+    $serviceType = trim((string)($formFields['service_type'] ?? ''));
+
+    $serviceTypeMap = [
+        'New door supply & install' => 'Installation',
+        'Garage door repair' => 'Repair',
+        'Motor / automation' => 'Automation',
+        'Spring, cable or track repair' => 'Repair',
+        'Remote or wall control' => 'Repair',
+        'Preventative maintenance' => 'Maintenance',
+        'Emergency repair' => 'Repair',
+        'Other / not sure' => 'Repair',
+    ];
+    $garageDoorTypeMap = [
+        'Sectional / panel lift' => 'Panel Door',
+        'Roller door' => 'Roller Door',
+        'Tilt door' => 'Tilt Door',
+        'Custom door' => 'Panel Door',
+        'Not sure' => 'Roller Door',
+    ];
+    $gateTypeMap = [
+        'Sliding gate' => 'Sliding Gate',
+        'Swing gate' => 'Single Swing Gate',
+        'Pedestrian gate' => 'Single Swing Gate',
+        'Not sure' => 'Single Swing Gate',
+    ];
+
+    $elementorServiceType = $serviceTypeMap[$serviceType] ?? 'Repair';
+    $elementorGarageDoorType = $serviceFor === 'Gate' ? 'Roller Door' : ($garageDoorTypeMap[$doorType] ?? 'Roller Door');
+    $elementorGateType = $serviceFor === 'Gate' ? ($gateTypeMap[$doorType] ?? 'Single Swing Gate') : 'Single Swing Gate';
+
+    $concern = implode("\n", array_filter([
+        'Source: Garage Door Repairs Melbourne landing page',
+        'Suburb / area: ' . trim((string)($formFields['suburb'] ?? '')),
+        'Property type: ' . trim((string)($formFields['property_type'] ?? '')),
+        'Type of service: ' . $serviceType,
+        'Service for: ' . $serviceFor,
+        $serviceFor === 'Gate' ? 'Gate type: ' . $doorType : 'Garage door type: ' . $doorType,
+        'Concern: ' . ($message !== '' ? $message : 'No concern provided.'),
+    ]));
+
+    // Match the Elementor field names used by the working AGG Doors quote form.
+    $payload = [
+        'action'        => 'elementor_pro_forms_send_form',
+        'post_id'       => $_POST['post_id']    ?? '7',
+        'form_id'       => $_POST['form_id']    ?? '2372f6b',
+        'referer_title' => 'Garage Door Repairs Melbourne - AGG Doors Inquiry',
+        'queried_id'    => $_POST['queried_id'] ?? '7',
+        'referrer'      => 'https://garagedoorrepairsmelbourne.net.au/',
+        'form_fields[full_name]'                    => trim((string)($formFields['name'] ?? '')),
+        'form_fields[email]'                        => trim((string)($formFields['email'] ?? '')),
+        'form_fields[contact_number]'               => preg_replace('/\s+/', '', trim((string)($formFields['phone'] ?? ''))),
+        'form_fields[suburb]'                       => trim((string)($formFields['suburb'] ?? '')),
+        'form_fields[property_type]'                => trim((string)($formFields['property_type'] ?? '')),
+        'form_fields[type_of_service]'              => $elementorServiceType,
+        'form_fields[service_for]'                  => $serviceFor,
+        'form_fields[type_of_garage_door]'          => $elementorGarageDoorType,
+        'form_fields[type_of_gate]'                 => $elementorGateType,
+        'form_fields[describe_garage_door_concern]' => $concern,
+        'form_fields[source_referrer]'              => 'www.garagedoorrepairsmelbourne.net.au',
+    ];
 
     if ($photo) {
-        $payload['form_fields[photo]'] = new CURLFile($photo['tmp_name'], $photo['type'], $photo['name']);
+        $payload['form_fields[photos]'] = new CURLFile($photo['tmp_name'], $photo['type'], $photo['name']);
     }
 
     $ch = curl_init($endpoint);
