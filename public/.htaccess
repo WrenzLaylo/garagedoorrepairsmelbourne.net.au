@@ -1,5 +1,12 @@
 # Garage Door Repairs Melbourne — Apache config (cPanel / Linux hosting)
 
+# Required. enquiry-submit.php and http-bootstrap.php read these with getenv() only; without
+# them the endpoint returns a bare 503 with no diagnostic. They belong in this tracked file, not
+# hand-added on the host - a wholesale dist/ deploy overwrites .htaccess and would remove them.
+SetEnv ENQUIRY_BOOTSTRAP_PATH /home/southeas/private/gdrm-enquiries/kit/http-bootstrap.php
+SetEnv ENQUIRY_CONFIG_PATH /home/southeas/private/gdrm-enquiries/config.php
+
+
 # ── Force HTTPS + canonical non-www ──
 <IfModule mod_rewrite.c>
   RewriteEngine On

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { SubmissionIdentity, buildSubmissionRequest, classifySubmissionResponse, validateStandaloneFile } from "../../lib/enquiryClient";
+import { standaloneEnquiriesEnabled, standaloneFields } from "../../lib/enquiryRouting";
 import {
   AlertCircle,
   Camera,
@@ -44,6 +46,7 @@ type Errors = Partial<Record<keyof FormValues, string>>;
 const ENDPOINT = import.meta.env.VITE_QUOTE_FORM_ENDPOINT || "/quote-submit.php";
 const TURNSTILE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
 const TURNSTILE_PLACEHOLDER = "replace-with-cloudflare-turnstile-site-key";
+const STANDALONE_ENQUIRIES = standaloneEnquiriesEnabled(import.meta.env.VITE_STANDALONE_ENQUIRIES);
 const HAS_TURNSTILE = Boolean(TURNSTILE_KEY && TURNSTILE_KEY !== TURNSTILE_PLACEHOLDER);
 
 // Keep the same Elementor-compatible payload style used by the other AGG Doors sites.
@@ -54,7 +57,7 @@ const ELEMENTOR = {
   queried_id: "7",
 };
 
-const FORM_OPTIONS = {
+export const FORM_OPTIONS = {
   propertyTypes: ["Residential", "Commercial", "Industrial", "Strata / Body Corporate", "Other"] as const,
   serviceTypes: [
     "New door supply & install",
@@ -294,6 +297,7 @@ export default function Contact({ onCall }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const turnstileRef = useRef<HTMLDivElement | null>(null);
   const widgetId = useRef<string | null>(null);
+  const submissionIdentity = useRef(new SubmissionIdentity());
 
   useEffect(() => {
     if (!HAS_TURNSTILE) return;
@@ -321,7 +325,16 @@ export default function Contact({ onCall }: Props) {
   };
 
   const onFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0] ?? null;
+    // Reject the wrong type or an oversized file here rather than letting the endpoint
+    // refuse it after the customer has already solved the Turnstile.
+    if (STANDALONE_ENQUIRIES && validateStandaloneFile(file)) {
+      setFileName("");
+      event.target.value = "";
+      setSubmitError("Please upload a JPG, PNG, or PDF no larger than 5MB.");
+      return;
+    }
+    setSubmitError("");
     setFileName(file ? file.name : "");
   };
 
@@ -379,6 +392,18 @@ export default function Contact({ onCall }: Props) {
     setStatus("submitting");
 
     try {
+      const file = fileRef.current?.files?.[0] ?? null;
+      let endpoint = ENDPOINT;
+      let body: BodyInit;
+
+      if (STANDALONE_ENQUIRIES) {
+        const request = buildSubmissionRequest(
+          { fields: standaloneFields(form), file, turnstileToken: token, startedAt: formStartedAt },
+          submissionIdentity.current,
+        );
+        endpoint = request.endpoint;
+        body = request.body;
+      } else {
       const payload = new FormData();
       payload.append("action", ELEMENTOR.action);
       payload.append("post_id", ELEMENTOR.post_id);
@@ -399,13 +424,15 @@ export default function Contact({ onCall }: Props) {
       payload.append("_form_started_at", String(formStartedAt));
       payload.append("cf-turnstile-response", token);
 
-      const file = fileRef.current?.files?.[0];
       if (file) payload.append("form_fields[photo]", file);
+        body = payload;
+      }
 
-      const response = await fetch(ENDPOINT, { method: "POST", body: payload });
+      const response = await fetch(endpoint, { method: "POST", body });
       const result = await response.json().catch(() => null);
-      if (!response.ok || (result && result.ok === false)) {
-        throw new Error(result?.message || `HTTP ${response.status}`);
+      const outcome = classifySubmissionResponse(response.status, result, STANDALONE_ENQUIRIES);
+      if (!outcome.accepted) {
+        throw new Error(result?.message || result?.error || `HTTP ${response.status}`);
       }
 
       setStatus("success");

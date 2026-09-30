@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/create-release-zip.mjs",
+    "build": "npm run verify:enquiry-client && vite build && node scripts/create-release-zip.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "gen:icons": "node scripts/gen-favicons.mjs"
+    "gen:icons": "node scripts/gen-favicons.mjs",
+    "verify:enquiry-client": "node scripts/check-enquiry-client.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.0",
