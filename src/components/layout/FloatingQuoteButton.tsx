@@ -208,6 +208,9 @@ export default function FloatingQuoteButton() {
         if (cancelled || !window.turnstile || !turnstileRef.current || widgetId.current !== null) return;
         widgetId.current = window.turnstile.render(turnstileRef.current, {
           sitekey: TURNSTILE_KEY,
+          // The kit verifies this against turnstile_action in the host config. Without it
+          // Cloudflare returns no action and every submission is rejected as "challenge".
+          action: "quote",
           theme: "light",
           callback: () => setSubmitError(""),
           "expired-callback": () => setSubmitError("Please complete the spam check again."),
