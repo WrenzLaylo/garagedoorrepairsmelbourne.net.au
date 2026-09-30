@@ -5,11 +5,14 @@ import {
 } from "lucide-react";
 import { CONTACT, BUSINESS } from "../../constants";
 import { getTurnstileResponse, loadTurnstile } from "../../utils/turnstile";
+import { SubmissionIdentity, buildSubmissionRequest, classifySubmissionResponse } from "../../lib/enquiryClient";
+import { standaloneEnquiriesEnabled, standaloneFields } from "../../lib/enquiryRouting";
 
 /* ─── env / constants ─────────────────────────────────────── */
 const ENDPOINT = import.meta.env.VITE_QUOTE_FORM_ENDPOINT || "/quote-submit.php";
 const TURNSTILE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
 const TURNSTILE_PLACEHOLDER = "replace-with-cloudflare-turnstile-site-key";
+const STANDALONE_ENQUIRIES = standaloneEnquiriesEnabled(import.meta.env.VITE_STANDALONE_ENQUIRIES);
 const HAS_TURNSTILE = Boolean(TURNSTILE_KEY && TURNSTILE_KEY !== TURNSTILE_PLACEHOLDER);
 
 const ELEMENTOR = {
@@ -170,6 +173,7 @@ export default function FloatingQuoteButton() {
   const [formStartedAt]         = useState(() => Math.floor(Date.now() / 1000));
 
   const fileRef       = useRef<HTMLInputElement>(null);
+  const submissionIdentity = useRef(new SubmissionIdentity());
   const turnstileRef  = useRef<HTMLDivElement>(null);
   const widgetId      = useRef<string | null>(null);
   const panelRef      = useRef<HTMLDivElement>(null);
@@ -254,6 +258,18 @@ export default function FloatingQuoteButton() {
 
     setStatus("submitting");
     try {
+      const file = fileRef.current?.files?.[0] ?? null;
+      let endpoint = ENDPOINT;
+      let body: BodyInit;
+
+      if (STANDALONE_ENQUIRIES) {
+        const request = buildSubmissionRequest(
+          { fields: standaloneFields(form), file, turnstileToken: token, startedAt: formStartedAt },
+          submissionIdentity.current,
+        );
+        endpoint = request.endpoint;
+        body = request.body;
+      } else {
       const payload = new FormData();
       payload.append("action", ELEMENTOR.action);
       payload.append("post_id", ELEMENTOR.post_id);
@@ -273,12 +289,14 @@ export default function FloatingQuoteButton() {
       payload.append("company",                    form.company);
       payload.append("_form_started_at",           String(formStartedAt));
       payload.append("cf-turnstile-response",      token);
-      const file = fileRef.current?.files?.[0];
       if (file) payload.append("form_fields[photo]", file);
+        body = payload;
+      }
 
-      const res = await fetch(ENDPOINT, { method: "POST", body: payload });
+      const res = await fetch(endpoint, { method: "POST", body });
       const result = await res.json().catch(() => null);
-      if (!res.ok || result?.ok === false) throw new Error(result?.message || `HTTP ${res.status}`);
+      const outcome = classifySubmissionResponse(res.status, result, STANDALONE_ENQUIRIES);
+      if (!outcome.accepted) throw new Error(result?.message || result?.error || `HTTP ${res.status}`);
       setStatus("success");
     } catch (err) {
       setStatus("error");
